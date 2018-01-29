@@ -9,16 +9,6 @@
   		<lwjgl.version>3.1.5</lwjgl.version>
 		<joml.version>1.9.7</joml.version>
   	</properties>
-  	
-  	<plugins>
-	    <plugin>    
-	        <artifactId>maven-compiler-plugin</artifactId>
-	        <configuration>
-	            <source>1.9</source>
-	            <target>1.9</target>
-	        </configuration>
-	    </plugin>
-	</plugins>
 
 	<dependencies>
 		<dependency>
