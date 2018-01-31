@@ -153,11 +153,16 @@ public class Renderer {
 
         gBufferShaderProgram.createUniform("viewMatrix");
         gBufferShaderProgram.createUniform("projectionMatrix");
+        gBufferShaderProgram.createUniform("texture_sampler");
+        gBufferShaderProgram.createUniform("texture_border");
+        gBufferShaderProgram.createUniform("normalMap");
+        gBufferShaderProgram.createMaterialUniform("material");
         gBufferShaderProgram.createUniform("isInstanced");
         gBufferShaderProgram.createUniform("modelNonInstancedMatrix");
         gBufferShaderProgram.createUniform("selectedNonInstanced");
-        gBufferShaderProgram.createUniform("color");
-        gBufferShaderProgram.createUniform("reflectance");
+        gBufferShaderProgram.createUniform("jointsMatrix");
+        gBufferShaderProgram.createUniform("numCols");
+        gBufferShaderProgram.createUniform("numRows");
 
         // Create uniforms for shadow mapping
         for (int i = 0; i < ShadowRenderer.NUM_CASCADES; i++) {
@@ -167,6 +172,7 @@ public class Renderer {
         gBufferShaderProgram.createUniform("lightViewMatrix", ShadowRenderer.NUM_CASCADES);
         gBufferShaderProgram.createUniform("cascadeFarPlanes", ShadowRenderer.NUM_CASCADES);
         gBufferShaderProgram.createUniform("renderShadow");
+        gBufferShaderProgram.createUniform("renderBorder");
     }
 
     private void setupDirLightShader() throws Exception {
@@ -252,6 +258,10 @@ public class Renderer {
         gBufferShaderProgram.setUniform("viewMatrix", viewMatrix);
         gBufferShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
+        gBufferShaderProgram.setUniform("texture_sampler", 0);
+        gBufferShaderProgram.setUniform("normalMap", 1);
+        gBufferShaderProgram.setUniform("texture_border", 10);
+
         List<ShadowCascade> shadowCascades = shadowRenderer.getShadowCascades();
         for (int i = 0; i < ShadowRenderer.NUM_CASCADES; i++) {
             ShadowCascade shadowCascade = shadowCascades.get(i);
@@ -265,6 +275,7 @@ public class Renderer {
             gBufferShaderProgram.setUniform("shadowMap_" + i, start + i);
         }
         gBufferShaderProgram.setUniform("renderShadow", scene.isRenderShadows() ? 1 : 0);
+        gBufferShaderProgram.setUniform("renderBorder", scene.isRenderBorder() ? 1 : 0);
 
         renderNonInstancedMeshes(scene);
 
@@ -508,13 +519,23 @@ public class Renderer {
         // Render each mesh with the associated game Items
         Map<Mesh, List<GameItem>> mapMeshes = scene.getGameMeshes();
         for (Mesh mesh : mapMeshes.keySet()) {
+            gBufferShaderProgram.setUniform("material", mesh.getMaterial());
+
+            Texture text = mesh.getMaterial().getTexture();
+            if (text != null) {
+                gBufferShaderProgram.setUniform("numCols", text.getNumCols());
+                gBufferShaderProgram.setUniform("numRows", text.getNumRows());
+            }
 
             mesh.renderList(mapMeshes.get(mesh), (GameItem gameItem) -> {
                 gBufferShaderProgram.setUniform("selectedNonInstanced", gameItem.isSelected() ? 1.0f : 0.0f);
-                gBufferShaderProgram.setUniform("color", gameItem.getColor());
-                gBufferShaderProgram.setUniform("reflectance", gameItem.getReflectance());
                 Matrix4f modelMatrix = transformation.buildModelMatrix(gameItem);
                 gBufferShaderProgram.setUniform("modelNonInstancedMatrix", modelMatrix);
+                if (gameItem instanceof AnimGameItem) {
+                    AnimGameItem animGameItem = (AnimGameItem) gameItem;
+                    AnimatedFrame frame = animGameItem.getCurrentAnimation().getCurrentFrame();
+                    gBufferShaderProgram.setUniform("jointsMatrix", frame.getJointMatrices());
+                }
             }
             );
         }
@@ -526,6 +547,13 @@ public class Renderer {
         // Render each mesh with the associated game Items
         Map<InstancedMesh, List<GameItem>> mapMeshes = scene.getGameInstancedMeshes();
         for (InstancedMesh mesh : mapMeshes.keySet()) {
+            Texture text = mesh.getMaterial().getTexture();
+            if (text != null) {
+                gBufferShaderProgram.setUniform("numCols", text.getNumCols());
+                gBufferShaderProgram.setUniform("numRows", text.getNumRows());
+            }
+
+            gBufferShaderProgram.setUniform("material", mesh.getMaterial());
 
             filteredItems.clear();
             for (GameItem gameItem : mapMeshes.get(mesh)) {

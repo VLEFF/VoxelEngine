@@ -33,7 +33,7 @@ public class InstancedMesh extends Mesh {
     private FloatBuffer instanceDataBuffer;
 
     public InstancedMesh(float[] positions, float[] textCoords, float[] normals, int[] indices, int numInstances) {
-        super(positions, textCoords, normals, indices);
+        super(positions, textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0));
 
         this.numInstances = numInstances;
 

@@ -34,7 +34,7 @@ public class StaticMeshesLoader {
 
     public static Mesh[] load(String resourcePath, String texturesDir) throws Exception {
         return load(resourcePath, texturesDir,
-                aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate
+                aiProcess_GenSmoothNormals | aiProcess_Triangulate
                         | aiProcess_FixInfacingNormals);
     }
 
@@ -51,7 +51,6 @@ public class StaticMeshesLoader {
             AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
             processMaterial(aiMaterial, materials, texturesDir);
         }
-
         int numMeshes = aiScene.mNumMeshes();
         PointerBuffer aiMeshes = aiScene.mMeshes();
         Mesh[] meshes = new Mesh[numMeshes];
@@ -107,7 +106,9 @@ public class StaticMeshesLoader {
         }
 
         Material material = new Material(diffuse, specular, 1.0f);
+        Texture borderTexture = new Texture("/textures/block4.png");
         material.setTexture(texture);
+        material.setTextureBorder(borderTexture);
         materials.add(material);
     }
 

@@ -197,9 +197,7 @@ public class AnimMeshesLoader extends StaticMeshesLoader {
         }
     }
 
-    // TODO handle anim mesh
     private static Mesh processMesh(AIMesh aiMesh, List<Material> materials, List<Bone> boneList) {
-    	/*
         List<Float> vertices = new ArrayList<>();
         List<Float> textures = new ArrayList<>();
         List<Float> normals = new ArrayList<>();
@@ -226,8 +224,6 @@ public class AnimMeshesLoader extends StaticMeshesLoader {
         mesh.setMaterial(material);
 
         return mesh;
-        */
-    	return null;
     }
 
     private static Node processNodesHierarchy(AINode aiNode, Node parentNode) {

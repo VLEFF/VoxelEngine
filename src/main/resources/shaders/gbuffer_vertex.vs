@@ -10,6 +10,7 @@ layout (location=2) in vec3 vertexNormal;
 layout (location=3) in vec4 jointWeights;
 layout (location=4) in ivec4 jointIndices;
 layout (location=5) in mat4 modelInstancedMatrix;
+layout (location=6) in vec2 borderCoord;
 layout (location=9) in vec2 texOffset;
 layout (location=10) in float selectedInstanced;
 
@@ -25,6 +26,7 @@ uniform int numRows;
 uniform float selectedNonInstanced;
 
 out vec2  vs_textcoord;
+out vec2  vs_bordercoord;
 out vec3  vs_worldpos;
 out vec3  vs_normal;
 out float vs_selected;
@@ -78,6 +80,7 @@ void main()
     float y = (texCoord.y / numRows + texOffset.y);
 
     vs_textcoord = vec2(x, y);
+    vs_bordercoord = borderCoord;
     vs_worldpos = (modelMatrix * initPos).xyz;
     vs_normal = normalize(modelMatrix * initNormal).xyz;
 

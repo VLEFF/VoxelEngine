@@ -1,5 +1,6 @@
 package org.lwjglb.game;
 
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -18,8 +19,10 @@ import org.lwjglb.engine.graph.Mesh;
 import org.lwjglb.engine.graph.Renderer;
 import org.lwjglb.engine.graph.lights.DirectionalLight;
 import org.lwjglb.engine.graph.lights.PointLight;
+import org.lwjglb.engine.graph.weather.Fog;
 import org.lwjglb.engine.items.GameItem;
-import org.lwjglb.engine.loaders.obj.OBJLoader;
+import org.lwjglb.engine.items.SkyBox;
+import org.lwjglb.engine.loaders.assimp.StaticMeshesLoader;
 
 public class DummyGame implements IGameLogic {
 
@@ -33,7 +36,7 @@ public class DummyGame implements IGameLogic {
 
     private Scene scene;
 
-    private static final float CAMERA_POS_STEP = 0.40f;
+    private static final float CAMERA_POS_STEP = 2;
 
     private float angleInc;
 
@@ -42,8 +45,8 @@ public class DummyGame implements IGameLogic {
     private boolean firstTime;
 
     private boolean sceneChanged;
-
-    private Vector3f pointLightPos;
+    
+    private boolean activeBorder;
 
     public DummyGame() {
         renderer = new Renderer();
@@ -60,49 +63,56 @@ public class DummyGame implements IGameLogic {
 
         scene = new Scene();
 
-        Mesh cubeMesh = OBJLoader.loadMesh("/models/cube.obj");
-        int blockSize = 50;
-        List<GameItem> cubes = new ArrayList<>();
-        for(int i = 0 ; i < blockSize ; i++) {
-        	for(int j = 0 ; j < blockSize ; j++) {
-    	        GameItem cube = new GameItem(new Mesh[] {cubeMesh});
-    	        cube.setPosition(i, 0, j);
-    	        cube.setScale(0.5f);
-    	        cube.setColor(new Vector4f(0, 1, 0, 1));
-    	        cubes.add(cube);
-            }
-        }
+        Mesh[] straightRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-0.obj", "src/main/resources/models/untitled");
+        Mesh[] curvedRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-1.obj", "src/main/resources/models/untitled");
+        Mesh[] planeMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-2.obj", "src/main/resources/models/untitled");
+        Mesh[] oldManMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-3.obj", "src/main/resources/models/untitled");
         
-        GameItem cube = new GameItem(cubeMesh);
-        cube.setPosition(24, 1, 24);
-        cube.setScale(0.5f);
-        cube.setColor(new Vector4f(1, 0, 0, 1));
-        cubes.add(cube);
-        cube = new GameItem(cubeMesh);
-        cube.setPosition(24, 2, 24);
-        cube.setScale(0.5f);
-        cube.setColor(new Vector4f(1, 0, 0, 1));
-        cubes.add(cube);
-        cube = new GameItem(cubeMesh);
-        cube.setPosition(24, 3, 24);
-        cube.setScale(0.5f);
-        cube.setColor(new Vector4f(1, 0, 0, 1));
-        cubes.add(cube);
-        
-        /*for(int i = 0 ; i < blockSize ; i++) {
-        	for(int j = 0 ; j < blockSize ; j++) {
-        		for(int k = 0 ; k < blockSize ; k++) {
-        			if(i == blockSize -1 ) {
-        	        GameItem cube = new GameItem(cubeMesh);
-        	        cube.setPosition(i, j, k);
-        	        cube.setScale(0.5f);
-        	        cube.setColor(new Vector4f(r.nextFloat(), r.nextFloat(), r.nextFloat(), 1));
-        	        cubes.add(cube);
-        			}
-                }
-            }
-        }*/
 
+        List<GameItem> cubes = new ArrayList<>();
+        float f = (float) Math.sqrt(2);
+       
+        GameItem straightRoad = new GameItem(straightRoadMesh);
+        straightRoad.setPosition(0, 0, 0);
+        straightRoad.setRotation(new Quaternionf(0, 1, 0, 0));
+        cubes.add(straightRoad);
+        straightRoad = new GameItem(straightRoadMesh);
+        straightRoad.setPosition(126, 0, 126);
+        straightRoad.setRotation(new Quaternionf(0, f/2, 0,  f/2));
+        cubes.add(straightRoad);
+        straightRoad = new GameItem(straightRoadMesh);
+        straightRoad.setPosition(0, 0, 252);
+        cubes.add(straightRoad);
+        straightRoad = new GameItem(straightRoadMesh);
+        straightRoad.setPosition(-126, 0, 126);
+        straightRoad.setRotation(new Quaternionf(0, f/2, 0,  -f/2));
+        cubes.add(straightRoad);
+        
+        
+        GameItem curvedRoad = new GameItem(curvedRoadMesh);
+        curvedRoad.setPosition(126, 0, 0);
+        curvedRoad.setRotation(new Quaternionf(0, f/2, 0,  f/2));
+        cubes.add(curvedRoad);
+        curvedRoad = new GameItem(curvedRoadMesh);
+        curvedRoad.setPosition(126, 0, 252);
+        cubes.add(curvedRoad);
+        curvedRoad = new GameItem(curvedRoadMesh);
+        curvedRoad.setPosition(-126, 0, 252);
+        curvedRoad.setRotation(new Quaternionf(0, f/2, 0,  -f/2));
+        cubes.add(curvedRoad);
+        curvedRoad = new GameItem(curvedRoadMesh);
+        curvedRoad.setPosition(-126, 0, 0);
+        curvedRoad.setRotation(new Quaternionf(0, 1, 0,  0));
+        cubes.add(curvedRoad);
+        
+        GameItem plane = new GameItem(planeMesh);
+        plane.setPosition(0, 0, 126);
+        cubes.add(plane);
+        
+        GameItem oldMan = new GameItem(oldManMesh);
+        oldMan.setPosition(0, 1, 0);
+        cubes.add(oldMan);
+        
         scene.setGameItems(cubes.toArray(new GameItem[cubes.size()]));
 
         // Shadows
@@ -111,11 +121,11 @@ public class DummyGame implements IGameLogic {
         // Setup Lights
         setupLights();
 
-        camera.getPosition().x = -20.0f;
-        camera.getPosition().y = 20.0f;
-        camera.getPosition().z = 20.0f;
-        camera.getRotation().x = 0.0f;
-        camera.getRotation().y = 90.f;
+        camera.getPosition().x = -17.0f;
+        camera.getPosition().y =  17.0f;
+        camera.getPosition().z = -30.0f;
+        camera.getRotation().x = 20.0f;
+        camera.getRotation().y = 140.f;
     }
 
     private void setupLights() {
@@ -124,10 +134,11 @@ public class DummyGame implements IGameLogic {
 
         // Ambient Light
         sceneLight.setAmbientLight(new Vector3f(0.3f, 0.3f, 0.3f));
+        sceneLight.setSkyBoxLight(new Vector3f(1.0f, 1.0f, 1.0f));
 
         // Directional Light
         float lightIntensity = 1.0f;
-        Vector3f lightDirection = new Vector3f(-1, 0, -1f);
+        Vector3f lightDirection = new Vector3f(0, 1, 1);
         DirectionalLight directionalLight = new DirectionalLight(new Vector3f(1, 1, 1), lightDirection, lightIntensity);
         sceneLight.setDirectionalLight(directionalLight);
         
@@ -168,12 +179,10 @@ public class DummyGame implements IGameLogic {
         } else {
             angleInc = 0;
         }
-        if (window.isKeyPressed(GLFW_KEY_UP)) {
-            sceneChanged = true;
-            pointLightPos.y += 0.5f;
-        } else if (window.isKeyPressed(GLFW_KEY_DOWN)) {
-            sceneChanged = true;
-            pointLightPos.y -= 0.5f;
+        if (window.isKeyPressed(GLFW_KEY_C)) {
+        	activeBorder = true;
+        } else if (window.isKeyPressed(GLFW_KEY_V)) {
+        	activeBorder = false;
         }
     }
 
@@ -186,6 +195,8 @@ public class DummyGame implements IGameLogic {
             sceneChanged = true;
         }
 
+        scene.setRenderBorder(activeBorder);
+        
         // Update camera position
         camera.movePosition(cameraInc.x * CAMERA_POS_STEP, cameraInc.y * CAMERA_POS_STEP, cameraInc.z * CAMERA_POS_STEP);
 

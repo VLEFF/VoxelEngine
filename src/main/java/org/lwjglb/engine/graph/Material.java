@@ -15,6 +15,8 @@ public class Material {
     private float reflectance;
 
     private Texture texture;
+
+    private Texture textureBorder;
     
     private Texture normalMap;
 
@@ -83,6 +85,14 @@ public class Material {
     public void setTexture(Texture texture) {
         this.texture = texture;
     }
+    
+    public Texture getTextureBorder() {
+		return textureBorder;
+	}
+    
+    public void setTextureBorder(Texture textureBorder) {
+		this.textureBorder = textureBorder;
+	}
     
     public boolean hasNormalMap() {
         return this.normalMap != null;

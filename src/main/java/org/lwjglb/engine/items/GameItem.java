@@ -2,7 +2,6 @@ package org.lwjglb.engine.items;
 
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.lwjglb.engine.graph.Mesh;
 
 public class GameItem {
@@ -12,10 +11,6 @@ public class GameItem {
     private Mesh[] meshes;
 
     private final Vector3f position;
-
-    private Vector4f color;
-    
-    private float reflectance;
 
     private float scale;
 
@@ -30,8 +25,6 @@ public class GameItem {
     public GameItem() {
         selected = false;
         position = new Vector3f(0, 0, 0);
-        color = new Vector4f(1, 1, 1, 1);
-        reflectance = 1.0f;
         scale = 1;
         rotation = new Quaternionf();
         textPos = 0;
@@ -66,22 +59,6 @@ public class GameItem {
         this.position.y = y;
         this.position.z = z;
     }
-    
-    public Vector4f getColor() {
-		return color;
-	}
-    
-    public void setColor(Vector4f color) {
-		this.color = color;
-	}
-    
-    public float getReflectance() {
-		return reflectance;
-	}
-    
-    public void setReflectance(float reflectance) {
-		this.reflectance = reflectance;
-	}
 
     public float getScale() {
         return scale;

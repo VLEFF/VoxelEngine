@@ -3,6 +3,8 @@
 const int NUM_CASCADES = 3;
 
 in vec3  vs_worldpos;
+in vec2  vs_textcoord;
+in vec2  vs_bordercoord;
 in vec3  vs_normal;
 in float vs_selected;
 in vec4  vs_mlightviewVertexPos[NUM_CASCADES];
@@ -15,17 +17,60 @@ layout (location = 2) out vec3 fs_specular;
 layout (location = 3) out vec3 fs_normal;
 layout (location = 4) out vec2 fs_shadow;
 
+struct Material
+{
+    vec4 diffuse;
+    vec4 specular;
+    int hasTexture;
+    int hasNormalMap;
+    float reflectance;
+};
+
+uniform sampler2D texture_sampler;
+uniform sampler2D normalMap;
+uniform sampler2D texture_border;
+uniform Material  material;
+
 uniform sampler2D shadowMap_0;
 uniform sampler2D shadowMap_1;
 uniform sampler2D shadowMap_2;
 uniform float cascadeFarPlanes[NUM_CASCADES];
 uniform mat4 orthoProjectionMatrix[NUM_CASCADES];
 uniform int renderShadow;
-uniform vec4 color;
-uniform float reflectance;
+uniform int renderBorder;
 
 vec4 diffuseC;
 vec4 speculrC;
+
+void getColour(Material material, vec2 textCoord)
+{
+    if (material.hasTexture == 1)
+    {
+        diffuseC = texture(texture_sampler, textCoord);
+    	speculrC = diffuseC;
+    } 
+    else
+    {
+        diffuseC = material.diffuse;
+        speculrC = material.specular;
+    }
+    if(renderBorder == 1){
+        diffuseC = diffuseC * texture(texture_border, vs_bordercoord);
+        speculrC = speculrC * texture(texture_border, vs_bordercoord);
+    }
+}
+
+vec3 calcNormal(Material material, vec3 normal, vec2 text_coord, mat4 modelMatrix)
+{
+    vec3 newNormal = normal;
+    if ( material.hasNormalMap == 1 )
+    {
+        newNormal = texture(normalMap, text_coord).rgb;
+        newNormal = normalize(newNormal * 2 - 1);
+        newNormal = normalize(modelMatrix * vec4(newNormal, 0.0)).xyz;
+    }
+    return newNormal;
+}
 
 float calcShadow(vec4 position, int idx)
 {
@@ -85,13 +130,12 @@ float calcShadow(vec4 position, int idx)
 
 void main()
 {
-	diffuseC = color;
-    speculrC = color;
+    getColour(material, vs_textcoord);
 
     fs_worldpos   = vs_worldpos;
     fs_diffuse    = diffuseC.xyz;
     fs_specular   = speculrC.xyz;
-    fs_normal     = normalize(vs_normal);
+    fs_normal     = normalize(calcNormal(material, vs_normal, vs_textcoord, vs_modelMatrix));
 
     int idx;
     for (int i=0; i<NUM_CASCADES; i++)
@@ -102,7 +146,7 @@ void main()
             break;
         }
     }
-	fs_shadow  = vec2(calcShadow(vs_mlightviewVertexPos[idx], idx), reflectance);
+	fs_shadow  = vec2(calcShadow(vs_mlightviewVertexPos[idx], idx), material.reflectance);
 
     if ( vs_selected > 0 ) {
         fs_diffuse = vec3(fs_diffuse.x, fs_diffuse.y, 1);

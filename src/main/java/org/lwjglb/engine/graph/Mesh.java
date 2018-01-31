@@ -35,6 +35,7 @@ public class Mesh {
     public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices, int[] jointIndices, float[] weights) {
         FloatBuffer posBuffer = null;
         FloatBuffer textCoordsBuffer = null;
+        FloatBuffer borderCoordsBuffer = null;
         FloatBuffer vecNormalsBuffer = null;
         FloatBuffer weightsBuffer = null;
         IntBuffer jointIndicesBuffer = null;
@@ -56,10 +57,10 @@ public class Mesh {
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
             glBufferData(GL_ARRAY_BUFFER, posBuffer, GL_STATIC_DRAW);
             glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-
+            
             // Texture coordinates VBO
             vboId = glGenBuffers();
-            vboIdList.add(vboId);
+            vboIdList.add(vboId);            
             textCoordsBuffer = MemoryUtil.memAllocFloat(textCoords.length);
             textCoordsBuffer.put(textCoords).flip();
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
@@ -92,7 +93,28 @@ public class Mesh {
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
             glBufferData(GL_ARRAY_BUFFER, jointIndicesBuffer, GL_STATIC_DRAW);
             glVertexAttribPointer(4, 4, GL_FLOAT, false, 0, 0);
+            
 
+
+            float[] borderCoords = new float[textCoords.length];
+            for(int i = 0 ; i < textCoords.length - 8 ; i = i + 8) {
+            	borderCoords[i] = 0;
+            	borderCoords[i+1] = 0;
+            	borderCoords[i+2] = 0;
+            	borderCoords[i+3] = 1;
+            	borderCoords[i+4] = 1;
+            	borderCoords[i+5] = 1;
+            	borderCoords[i+6] = 1;
+            	borderCoords[i+7] = 0;
+            }
+            vboId = glGenBuffers();
+            vboIdList.add(vboId);            
+            borderCoordsBuffer = MemoryUtil.memAllocFloat(borderCoords.length);
+            borderCoordsBuffer.put(borderCoords).flip();
+            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ARRAY_BUFFER, borderCoordsBuffer, GL_STATIC_DRAW);
+            glVertexAttribPointer(6, 2, GL_FLOAT, false, 0, 0);
+            
             // Index VBO
             vboId = glGenBuffers();
             vboIdList.add(vboId);
@@ -109,6 +131,9 @@ public class Mesh {
             }
             if (textCoordsBuffer != null) {
                 MemoryUtil.memFree(textCoordsBuffer);
+            }
+            if (borderCoordsBuffer != null) {
+                MemoryUtil.memFree(borderCoordsBuffer);
             }
             if (vecNormalsBuffer != null) {
                 MemoryUtil.memFree(vecNormalsBuffer);
@@ -173,6 +198,13 @@ public class Mesh {
             // Bind the texture
             glBindTexture(GL_TEXTURE_2D, normalMap.getId());
         }
+        Texture borderTexture = material != null ? material.getTextureBorder() : null;
+        if (borderTexture != null) {
+            // Activate second texture bank
+            glActiveTexture(GL_TEXTURE10);
+            // Bind the texture
+            glBindTexture(GL_TEXTURE_2D, borderTexture.getId());
+        }
 
         // Draw the mesh
         glBindVertexArray(getVaoId());
@@ -181,6 +213,7 @@ public class Mesh {
         glEnableVertexAttribArray(2);
         glEnableVertexAttribArray(3);
         glEnableVertexAttribArray(4);
+        glEnableVertexAttribArray(6);
     }
 
     protected void endRender() {
@@ -190,6 +223,7 @@ public class Mesh {
         glDisableVertexAttribArray(2);
         glDisableVertexAttribArray(3);
         glDisableVertexAttribArray(4);
+        glDisableVertexAttribArray(6);
         glBindVertexArray(0);
 
         glBindTexture(GL_TEXTURE_2D, 0);

@@ -24,6 +24,8 @@ public class Scene {
     private Fog fog;
 
     private boolean renderShadows;
+
+    private boolean renderBorder;
     
     private IParticleEmitter[] particleEmitters;
 
@@ -124,4 +126,11 @@ public class Scene {
         this.particleEmitters = particleEmitters;
     }
 
+    public boolean isRenderBorder() {
+		return renderBorder;
+	}
+    
+    public void setRenderBorder(boolean renderBorder) {
+		this.renderBorder = renderBorder;
+	}
 }

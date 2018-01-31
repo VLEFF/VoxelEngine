@@ -81,6 +81,14 @@ public class ShaderProgram {
         createUniform(uniformName + ".intensity");
     }
 
+    public void createMaterialUniform(String uniformName) throws Exception {
+        createUniform(uniformName + ".diffuse");
+        createUniform(uniformName + ".specular");
+        createUniform(uniformName + ".hasTexture");
+        createUniform(uniformName + ".hasNormalMap");
+        createUniform(uniformName + ".reflectance");
+    }
+
     public void createFogUniform(String uniformName) throws Exception {
         createUniform(uniformName + ".activeFog");
         createUniform(uniformName + ".colour");
