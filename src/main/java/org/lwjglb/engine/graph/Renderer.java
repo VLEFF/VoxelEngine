@@ -7,6 +7,7 @@ import org.lwjglb.engine.graph.lights.DirectionalLight;
 import java.util.List;
 import java.util.Map;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import static org.lwjgl.opengl.GL11.*;
@@ -15,6 +16,7 @@ import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL30.*;
 
 import org.lwjglb.engine.items.GameItem;
+import org.lwjglb.engine.MouseInput;
 import org.lwjglb.engine.Scene;
 import org.lwjglb.engine.SceneLight;
 import org.lwjglb.engine.items.SkyBox;
@@ -82,7 +84,7 @@ public class Renderer {
         bufferPassMesh = StaticMeshesLoader.load("src/main/resources/models/buffer_pass_mess.obj", "src/main/resources/models")[0];
     }
 
-    public void render(Window window, Camera camera, Scene scene, boolean sceneChanged) {
+    public void render(Window window, MouseInput mouseInput, Camera camera, Scene scene, boolean sceneChanged) {
         clear();
 
         if (window.getOptions().frustumCulling) {
@@ -101,7 +103,7 @@ public class Renderer {
         // Update projection matrix once per render cycle
         window.updateProjectionMatrix();
 
-        renderGBuffer(window, camera, scene);
+        renderGBuffer(window, camera, scene, mouseInput);
 
         initLightRendering();
         renderPointLights(window, camera, scene);
@@ -155,6 +157,10 @@ public class Renderer {
         gBufferShaderProgram.createUniform("projectionMatrix");
         gBufferShaderProgram.createUniform("texture_sampler");
         gBufferShaderProgram.createUniform("texture_border");
+        gBufferShaderProgram.createUniform("texture_border_left");
+        gBufferShaderProgram.createUniform("texture_border_top");
+        gBufferShaderProgram.createUniform("texture_border_right");
+        gBufferShaderProgram.createUniform("texture_border_bottom");
         gBufferShaderProgram.createUniform("normalMap");
         gBufferShaderProgram.createMaterialUniform("material");
         gBufferShaderProgram.createUniform("isInstanced");
@@ -173,6 +179,8 @@ public class Renderer {
         gBufferShaderProgram.createUniform("cascadeFarPlanes", ShadowRenderer.NUM_CASCADES);
         gBufferShaderProgram.createUniform("renderShadow");
         gBufferShaderProgram.createUniform("renderBorder");
+
+        gBufferShaderProgram.createUniform("mousePosition");
     }
 
     private void setupDirLightShader() throws Exception {
@@ -243,7 +251,7 @@ public class Renderer {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
-    private void renderGBuffer(Window window, Camera camera, Scene scene) {
+    private void renderGBuffer(Window window, Camera camera, Scene scene, MouseInput mouseInput) {
         // Render G-Buffer for writing
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, gBuffer.getGBufferId());
 
@@ -261,6 +269,10 @@ public class Renderer {
         gBufferShaderProgram.setUniform("texture_sampler", 0);
         gBufferShaderProgram.setUniform("normalMap", 1);
         gBufferShaderProgram.setUniform("texture_border", 10);
+        gBufferShaderProgram.setUniform("texture_border_left", 11);
+        gBufferShaderProgram.setUniform("texture_border_top", 12);
+        gBufferShaderProgram.setUniform("texture_border_right", 13);
+        gBufferShaderProgram.setUniform("texture_border_bottom", 14);
 
         List<ShadowCascade> shadowCascades = shadowRenderer.getShadowCascades();
         for (int i = 0; i < ShadowRenderer.NUM_CASCADES; i++) {
@@ -276,6 +288,8 @@ public class Renderer {
         }
         gBufferShaderProgram.setUniform("renderShadow", scene.isRenderShadows() ? 1 : 0);
         gBufferShaderProgram.setUniform("renderBorder", scene.isRenderBorder() ? 1 : 0);
+        
+        gBufferShaderProgram.setUniform("mousePosition", new Vector2f((float)mouseInput.getCurrentPos().x, (float)mouseInput.getCurrentPos().y));
 
         renderNonInstancedMeshes(scene);
 

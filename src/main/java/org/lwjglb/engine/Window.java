@@ -13,7 +13,7 @@ public class Window {
     /**
      * Field of View in Radians
      */
-    public static final float FOV = (float) Math.toRadians(60.0f);
+    public static final float FOV = (float) Math.toRadians(80.0f);
 
     /**
      * Distance to the near plane
@@ -143,6 +143,8 @@ public class Window {
         if (opts.antialiasing) {
             glfwWindowHint(GLFW_SAMPLES, 4);
         }
+        glEnable(GL_LINE_SMOOTH);
+        glHint(GL_LINE_SMOOTH_HINT,  GL_NICEST);
     }
     
     public void restoreState() {

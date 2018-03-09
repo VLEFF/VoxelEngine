@@ -17,6 +17,8 @@ import org.lwjglb.engine.items.GameItem;
 public class Mesh {
 
     public static final int MAX_WEIGHTS = 4;
+    
+    public static final int TEXTURE_SIZE = 8;
 
     protected final int vaoId;
 
@@ -95,17 +97,106 @@ public class Mesh {
             glVertexAttribPointer(4, 4, GL_FLOAT, false, 0, 0);
             
 
-
+            int mapSize = 40;
+            int squareSize = 8;
             float[] borderCoords = new float[textCoords.length];
             for(int i = 0 ; i < textCoords.length - 8 ; i = i + 8) {
-            	borderCoords[i] = 0;
-            	borderCoords[i+1] = 0;
-            	borderCoords[i+2] = 0;
-            	borderCoords[i+3] = 1;
-            	borderCoords[i+4] = 1;
-            	borderCoords[i+5] = 1;
-            	borderCoords[i+6] = 1;
-            	borderCoords[i+7] = 0;
+
+            	borderCoords[i] = 0.1f;
+            	borderCoords[i+1] = 0.1f;
+            	borderCoords[i+2] = 0.1f;
+            	borderCoords[i+3] = 0.9f;
+            	borderCoords[i+4] = 0.9f;
+            	borderCoords[i+5] = 0.9f;
+            	borderCoords[i+6] = 0.9f;
+            	borderCoords[i+7] = 0.1f;
+            	
+            	/*if(isTop(i,mapSize,squareSize)) {
+            		if(isLeft(i,mapSize,squareSize)) {
+                    	borderCoords[i] = 0.05f;
+                    	borderCoords[i+1] = 0.55f;
+                    	borderCoords[i+2] = 0.05f;
+                    	borderCoords[i+3] = 0.95f;
+                    	borderCoords[i+4] = 0.45f;
+                    	borderCoords[i+5] = 0.95f;
+                    	borderCoords[i+6] = 0.45f;
+                    	borderCoords[i+7] = 0.55f;
+            		} else if(isRight(i,mapSize,squareSize)) {
+                    	borderCoords[i] = 0.05f;
+                    	borderCoords[i+1] = 0.95f;
+                    	borderCoords[i+2] = 0.45f;
+                    	borderCoords[i+3] = 0.95f;
+                    	borderCoords[i+4] = 0.45f;
+                    	borderCoords[i+5] = 0.55f;
+                    	borderCoords[i+6] = 0.05f;
+                    	borderCoords[i+7] = 0.55f;
+                	} else {
+                    	borderCoords[i] = 0.55f;
+                    	borderCoords[i+1] = 0.05f;
+                    	borderCoords[i+2] = 0.55f;
+                    	borderCoords[i+3] = 0.45f;
+                    	borderCoords[i+4] = 0.95f;
+                    	borderCoords[i+5] = 0.45f;
+                    	borderCoords[i+6] = 0.95f;
+                    	borderCoords[i+7] = 0.05f;
+            		}
+            	} else if(isBottom(i,mapSize,squareSize)) {
+            		if(isLeft(i,mapSize,squareSize)) {
+                    	borderCoords[i] = 0.45f;
+                    	borderCoords[i+1] = 0.55f;
+                    	borderCoords[i+2] = 0.05f;
+                    	borderCoords[i+3] = 0.55f;
+                    	borderCoords[i+4] = 0.05f;
+                    	borderCoords[i+5] = 0.95f;
+                    	borderCoords[i+6] = 0.45f;
+                    	borderCoords[i+7] = 0.95f;
+            		} else if(isRight(i,mapSize,squareSize)) {
+                    	borderCoords[i] = 0.45f;
+                    	borderCoords[i+1] = 0.95f;
+                    	borderCoords[i+2] = 0.45f;
+                    	borderCoords[i+3] = 0.55f;
+                    	borderCoords[i+4] = 0.05f;
+                    	borderCoords[i+5] = 0.55f;
+                    	borderCoords[i+6] = 0.05f;
+                    	borderCoords[i+7] = 0.95f;
+                	} else {
+                    	borderCoords[i] = 0.95f;
+                    	borderCoords[i+1] = 0.45f;
+                    	borderCoords[i+2] = 0.95f;
+                    	borderCoords[i+3] = 0.05f;
+                    	borderCoords[i+4] = 0.55f;
+                    	borderCoords[i+5] = 0.05f;
+                    	borderCoords[i+6] = 0.55f;
+                    	borderCoords[i+7] = 0.45f;
+                	}
+            	} else if(isLeft(i,mapSize,squareSize)) {
+                	borderCoords[i] = 0.95f;
+                	borderCoords[i+1] = 0.05f;
+                	borderCoords[i+2] = 0.55f;
+                	borderCoords[i+3] = 0.05f;
+                	borderCoords[i+4] = 0.55f;
+                	borderCoords[i+5] = 0.45f;
+                	borderCoords[i+6] = 0.95f;
+                	borderCoords[i+7] = 0.45f;
+            	} else if(isRight(i,mapSize,squareSize)) {
+                	borderCoords[i] = 0.55f;
+                	borderCoords[i+1] = 0.45f;
+                	borderCoords[i+2] = 0.95f;
+                	borderCoords[i+3] = 0.45f;
+                	borderCoords[i+4] = 0.95f;
+                	borderCoords[i+5] = 0.05f;
+                	borderCoords[i+6] = 0.55f;
+                	borderCoords[i+7] = 0.05f;
+            	} else {
+                	borderCoords[i] = 0.05f;
+                	borderCoords[i+1] = 0.05f;
+                	borderCoords[i+2] = 0.05f;
+                	borderCoords[i+3] = 0.45f;
+                	borderCoords[i+4] = 0.45f;
+                	borderCoords[i+5] = 0.45f;
+                	borderCoords[i+6] = 0.45f;
+                	borderCoords[i+7] = 0.05f;
+            	}*/
             }
             vboId = glGenBuffers();
             vboIdList.add(vboId);            
@@ -149,6 +240,23 @@ public class Mesh {
             }
         }
     }
+    
+    private boolean isLeft(int i, int mapSize, int squareSize) {
+    	return (i % (mapSize * TEXTURE_SIZE)) % (TEXTURE_SIZE * squareSize) == TEXTURE_SIZE * (squareSize - 1);
+    }
+    
+    private boolean isRight(int i, int mapSize, int squareSize) {
+    	return (i % (mapSize * TEXTURE_SIZE)) % (TEXTURE_SIZE * squareSize) == 0;
+    }
+    
+    private boolean isTop(int i, int mapSize, int squareSize) {
+    	return i % (mapSize * TEXTURE_SIZE * squareSize) < (mapSize * TEXTURE_SIZE);
+    }
+    
+    private boolean isBottom(int i, int mapSize, int squareSize) {
+    	return i % (mapSize * TEXTURE_SIZE * squareSize) > (mapSize * TEXTURE_SIZE * (squareSize - 1));
+    }
+    
     
     private void calculateBoundingRadius(float positions[]) {
         int length = positions.length;
@@ -204,6 +312,34 @@ public class Mesh {
             glActiveTexture(GL_TEXTURE10);
             // Bind the texture
             glBindTexture(GL_TEXTURE_2D, borderTexture.getId());
+        }
+        Texture borderTextureLeft = material != null ? material.getTextureBorderLeft() : null;
+        if (borderTextureLeft != null) {
+            // Activate second texture bank
+            glActiveTexture(GL_TEXTURE11);
+            // Bind the texture
+            glBindTexture(GL_TEXTURE_2D, borderTextureLeft.getId());
+        }
+        Texture borderTextureTop = material != null ? material.getTextureBorderTop() : null;
+        if (borderTextureTop != null) {
+            // Activate second texture bank
+            glActiveTexture(GL_TEXTURE12);
+            // Bind the texture
+            glBindTexture(GL_TEXTURE_2D, borderTextureTop.getId());
+        }
+        Texture borderTextureRight = material != null ? material.getTextureBorderRight() : null;
+        if (borderTextureRight != null) {
+            // Activate second texture bank
+            glActiveTexture(GL_TEXTURE13);
+            // Bind the texture
+            glBindTexture(GL_TEXTURE_2D, borderTextureRight.getId());
+        }
+        Texture borderTextureBottom = material != null ? material.getTextureBorderBottom() : null;
+        if (borderTextureBottom != null) {
+            // Activate second texture bank
+            glActiveTexture(GL_TEXTURE14);
+            // Bind the texture
+            glBindTexture(GL_TEXTURE_2D, borderTextureBottom.getId());
         }
 
         // Draw the mesh

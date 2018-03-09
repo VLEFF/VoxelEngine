@@ -47,6 +47,8 @@ public class DummyGame implements IGameLogic {
     private boolean sceneChanged;
     
     private boolean activeBorder;
+    
+    private MouseBoxSelectionDetector mbsd = new MouseBoxSelectionDetector();
 
     public DummyGame() {
         renderer = new Renderer();
@@ -63,7 +65,7 @@ public class DummyGame implements IGameLogic {
 
         scene = new Scene();
 
-        Mesh[] straightRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-0.obj", "src/main/resources/models/untitled");
+        Mesh[] straightRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/monu3.obj", "src/main/resources/models/untitled");
         Mesh[] curvedRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-1.obj", "src/main/resources/models/untitled");
         Mesh[] planeMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-2.obj", "src/main/resources/models/untitled");
         Mesh[] oldManMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-3.obj", "src/main/resources/models/untitled");
@@ -74,44 +76,7 @@ public class DummyGame implements IGameLogic {
        
         GameItem straightRoad = new GameItem(straightRoadMesh);
         straightRoad.setPosition(0, 0, 0);
-        straightRoad.setRotation(new Quaternionf(0, 1, 0, 0));
         cubes.add(straightRoad);
-        straightRoad = new GameItem(straightRoadMesh);
-        straightRoad.setPosition(126, 0, 126);
-        straightRoad.setRotation(new Quaternionf(0, f/2, 0,  f/2));
-        cubes.add(straightRoad);
-        straightRoad = new GameItem(straightRoadMesh);
-        straightRoad.setPosition(0, 0, 252);
-        cubes.add(straightRoad);
-        straightRoad = new GameItem(straightRoadMesh);
-        straightRoad.setPosition(-126, 0, 126);
-        straightRoad.setRotation(new Quaternionf(0, f/2, 0,  -f/2));
-        cubes.add(straightRoad);
-        
-        
-        GameItem curvedRoad = new GameItem(curvedRoadMesh);
-        curvedRoad.setPosition(126, 0, 0);
-        curvedRoad.setRotation(new Quaternionf(0, f/2, 0,  f/2));
-        cubes.add(curvedRoad);
-        curvedRoad = new GameItem(curvedRoadMesh);
-        curvedRoad.setPosition(126, 0, 252);
-        cubes.add(curvedRoad);
-        curvedRoad = new GameItem(curvedRoadMesh);
-        curvedRoad.setPosition(-126, 0, 252);
-        curvedRoad.setRotation(new Quaternionf(0, f/2, 0,  -f/2));
-        cubes.add(curvedRoad);
-        curvedRoad = new GameItem(curvedRoadMesh);
-        curvedRoad.setPosition(-126, 0, 0);
-        curvedRoad.setRotation(new Quaternionf(0, 1, 0,  0));
-        cubes.add(curvedRoad);
-        
-        GameItem plane = new GameItem(planeMesh);
-        plane.setPosition(0, 0, 126);
-        cubes.add(plane);
-        
-        GameItem oldMan = new GameItem(oldManMesh);
-        oldMan.setPosition(0, 1, 0);
-        cubes.add(oldMan);
         
         scene.setGameItems(cubes.toArray(new GameItem[cubes.size()]));
 
@@ -134,10 +99,9 @@ public class DummyGame implements IGameLogic {
 
         // Ambient Light
         sceneLight.setAmbientLight(new Vector3f(0.3f, 0.3f, 0.3f));
-        sceneLight.setSkyBoxLight(new Vector3f(1.0f, 1.0f, 1.0f));
 
         // Directional Light
-        float lightIntensity = 1.0f;
+        float lightIntensity = 0.5f;
         Vector3f lightDirection = new Vector3f(0, 1, 1);
         DirectionalLight directionalLight = new DirectionalLight(new Vector3f(1, 1, 1), lightDirection, lightIntensity);
         sceneLight.setDirectionalLight(directionalLight);
@@ -201,11 +165,7 @@ public class DummyGame implements IGameLogic {
         camera.movePosition(cameraInc.x * CAMERA_POS_STEP, cameraInc.y * CAMERA_POS_STEP, cameraInc.z * CAMERA_POS_STEP);
 
         lightAngle += angleInc;
-        if (lightAngle < 0) {
-            lightAngle = 0;
-        } else if (lightAngle > 180) {
-            lightAngle = 180;
-        }
+        
         float zValue = (float) Math.cos(Math.toRadians(lightAngle));
         float yValue = (float) Math.sin(Math.toRadians(lightAngle));
         Vector3f lightDirection = this.scene.getSceneLight().getDirectionalLight().getDirection();
@@ -216,15 +176,23 @@ public class DummyGame implements IGameLogic {
 
         // Update view matrix
         camera.updateViewMatrix();
+        for(List<GameItem> items : scene.getGameMeshes().values()) {
+        	mbsd.selectGameItem(items.toArray(new GameItem[items.size()]), window, mouseInput.getCurrentPos(), camera);
+        	for(GameItem item : items) {
+        		if(item.isSelected()) {
+        			System.out.println("selected");
+        		}
+        	}
+        }
     }
 
     @Override
-    public void render(Window window) {
+    public void render(Window window, MouseInput mouseInput) {
         if (firstTime) {
             sceneChanged = true;
             firstTime = false;
         }
-        renderer.render(window, camera, scene, sceneChanged);
+        renderer.render(window, mouseInput, camera, scene, sceneChanged);
     }
 
     @Override

@@ -29,6 +29,10 @@ struct Material
 uniform sampler2D texture_sampler;
 uniform sampler2D normalMap;
 uniform sampler2D texture_border;
+uniform sampler2D texture_border_left;
+uniform sampler2D texture_border_top;
+uniform sampler2D texture_border_right;
+uniform sampler2D texture_border_bottom;
 uniform Material  material;
 
 uniform sampler2D shadowMap_0;
@@ -38,6 +42,8 @@ uniform float cascadeFarPlanes[NUM_CASCADES];
 uniform mat4 orthoProjectionMatrix[NUM_CASCADES];
 uniform int renderShadow;
 uniform int renderBorder;
+
+uniform vec2 mousePosition;
 
 vec4 diffuseC;
 vec4 speculrC;
@@ -55,8 +61,53 @@ void getColour(Material material, vec2 textCoord)
         speculrC = material.specular;
     }
     if(renderBorder == 1){
-        diffuseC = diffuseC * texture(texture_border, vs_bordercoord);
-        speculrC = speculrC * texture(texture_border, vs_bordercoord);
+    	float minX = mousePosition.x - mod(mousePosition.x,8);
+    	float maxX = minX + 8;
+    	float minZ = mousePosition.y - mod(mousePosition.y,8);
+    	float maxZ = minZ + 8;
+    	if(vs_worldpos.z >= minX && vs_worldpos.z < maxX && vs_worldpos.x >= minZ && vs_worldpos.x < maxZ) { 
+	    	diffuseC = vec4(1,0,0,1);
+	        speculrC = vec4(1,0,0,1);
+        }
+        if(vs_normal.y != 0) {
+	        if(mod(vs_worldpos.z, 8) > 7.8) {
+		    	diffuseC = vec4(0,0,0,1);
+		        speculrC = vec4(0,0,0,1);
+			}
+			if(mod(vs_worldpos.x, 8) < 0.2) {
+		    	diffuseC = vec4(0,0,0,1);
+		        speculrC = vec4(0,0,0,1);
+			}
+			if(mod(vs_worldpos.z, 8) < 0.2) {
+		    	diffuseC = vec4(0,0,0,1);
+		        speculrC = vec4(0,0,0,1);
+			}
+			if(mod(vs_worldpos.x, 8) > 7.8) {
+		    	diffuseC = vec4(0,0,0,1);
+		        speculrC = vec4(0,0,0,1);
+			}
+		}
+		
+		diffuseC = diffuseC * texture(texture_border, vs_bordercoord);
+		speculrC = speculrC * texture(texture_border, vs_bordercoord);
+        if(renderBorder == 0){
+	        if(mod(vs_worldpos.z, 8) > 7) {
+		        diffuseC = diffuseC * texture(texture_border_left, vs_bordercoord);
+		        speculrC = speculrC * texture(texture_border_left, vs_bordercoord);
+			}
+			if(mod(vs_worldpos.x, 8) < 1) {
+		        diffuseC = diffuseC * texture(texture_border_top, vs_bordercoord);
+		        speculrC = speculrC * texture(texture_border_top, vs_bordercoord);
+			}
+			if(mod(vs_worldpos.z, 8) < 1) {
+		        diffuseC = diffuseC * texture(texture_border_right, vs_bordercoord);
+		        speculrC = speculrC * texture(texture_border_right, vs_bordercoord);
+			}
+			if(mod(vs_worldpos.x, 8) > 7) {
+		        diffuseC = diffuseC * texture(texture_border_bottom, vs_bordercoord);
+		        speculrC = speculrC * texture(texture_border_bottom, vs_bordercoord);
+			}
+     	}
     }
 }
 
@@ -133,6 +184,7 @@ void main()
     getColour(material, vs_textcoord);
 
     fs_worldpos   = vs_worldpos;
+    
     fs_diffuse    = diffuseC.xyz;
     fs_specular   = speculrC.xyz;
     fs_normal     = normalize(calcNormal(material, vs_normal, vs_textcoord, vs_modelMatrix));

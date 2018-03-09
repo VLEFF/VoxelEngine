@@ -123,7 +123,7 @@ public class GameEngine implements Runnable {
             fps = 0;
         }
         fps++;
-        gameLogic.render(window);
+        gameLogic.render(window, mouseInput);
         window.update();
     }
 

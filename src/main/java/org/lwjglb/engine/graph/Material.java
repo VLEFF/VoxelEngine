@@ -17,6 +17,10 @@ public class Material {
     private Texture texture;
 
     private Texture textureBorder;
+    private Texture textureBorderLeft;
+    private Texture textureBorderTop;
+    private Texture textureBorderRight;
+    private Texture textureBorderBottom;
     
     private Texture normalMap;
 
@@ -94,7 +98,39 @@ public class Material {
 		this.textureBorder = textureBorder;
 	}
     
-    public boolean hasNormalMap() {
+    public Texture getTextureBorderLeft() {
+		return textureBorderLeft;
+	}
+
+	public void setTextureBorderLeft(Texture textureBorderLeft) {
+		this.textureBorderLeft = textureBorderLeft;
+	}
+
+	public Texture getTextureBorderTop() {
+		return textureBorderTop;
+	}
+
+	public void setTextureBorderTop(Texture textureBorderTop) {
+		this.textureBorderTop = textureBorderTop;
+	}
+
+	public Texture getTextureBorderRight() {
+		return textureBorderRight;
+	}
+
+	public void setTextureBorderRight(Texture textureBorderRight) {
+		this.textureBorderRight = textureBorderRight;
+	}
+
+	public Texture getTextureBorderBottom() {
+		return textureBorderBottom;
+	}
+
+	public void setTextureBorderBottom(Texture textureBorderBottom) {
+		this.textureBorderBottom = textureBorderBottom;
+	}
+
+	public boolean hasNormalMap() {
         return this.normalMap != null;
     }
 

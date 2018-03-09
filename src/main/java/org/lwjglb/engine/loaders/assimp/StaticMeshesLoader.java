@@ -106,9 +106,17 @@ public class StaticMeshesLoader {
         }
 
         Material material = new Material(diffuse, specular, 1.0f);
-        Texture borderTexture = new Texture("/textures/block4.png");
+        Texture borderTexture = new Texture("/textures/border.png");
+        Texture borderTextureLeft = new Texture("/textures/border-left.png");
+        Texture borderTextureTop = new Texture("/textures/border-top.png");
+        Texture borderTextureRight = new Texture("/textures/border-right.png");
+        Texture borderTextureBottom = new Texture("/textures/border-bottom.png");
         material.setTexture(texture);
         material.setTextureBorder(borderTexture);
+        material.setTextureBorderLeft(borderTextureLeft);
+        material.setTextureBorderTop(borderTextureTop);
+        material.setTextureBorderRight(borderTextureRight);
+        material.setTextureBorderBottom(borderTextureBottom);
         materials.add(material);
     }
 
