@@ -6,7 +6,6 @@ in vec3  vs_worldpos;
 in vec2  vs_textcoord;
 in vec2  vs_bordercoord;
 in vec3  vs_normal;
-in float vs_selected;
 in vec4  vs_mlightviewVertexPos[NUM_CASCADES];
 in mat4  vs_modelMatrix;
 in vec4  vs_mvVertexPos;
@@ -43,6 +42,7 @@ uniform mat4 orthoProjectionMatrix[NUM_CASCADES];
 uniform int renderShadow;
 uniform int renderBorder;
 
+uniform vec3 selectedBlocks[100];
 uniform vec2 mousePosition;
 
 vec4 diffuseC;
@@ -61,15 +61,20 @@ void getColour(Material material, vec2 textCoord)
         speculrC = material.specular;
     }
     if(renderBorder == 1){
-    	float minX = mousePosition.x - mod(mousePosition.x,8);
-    	float maxX = minX + 8;
-    	float minZ = mousePosition.y - mod(mousePosition.y,8);
-    	float maxZ = minZ + 8;
-    	if(vs_worldpos.z >= minX && vs_worldpos.z < maxX && vs_worldpos.x >= minZ && vs_worldpos.x < maxZ) { 
-	    	diffuseC = vec4(1,0,0,1);
-	        speculrC = vec4(1,0,0,1);
-        }
         if(vs_normal.y != 0) {
+        	if(vs_normal.y >0) {
+		        for(int i = 0; i < selectedBlocks.length; ++i)
+		    	{
+		    		vec3 selectedBlock = selectedBlocks[i];
+		    		if(vs_worldpos.x > (selectedBlock.x * 8) && vs_worldpos.x < (((selectedBlock.x + 1) * 8)+0.01)
+		    			&& vs_worldpos.y >= ((selectedBlock.y * 8)+0.01) && vs_worldpos.y < (((selectedBlock.y + 1) * 8)+0.01) 
+		    			&& vs_worldpos.z >= ((selectedBlock.z * 8)+0.01) && vs_worldpos.z < (((selectedBlock.z + 1) * 8)+0.01)) { 
+				    	diffuseC = vec4(1, 0, 0, 1);
+				        speculrC = vec4(1, 0, 0, 1);
+				        break;
+			        }
+		    	}
+		    }
 	        if(mod(vs_worldpos.z, 8) > 7.8) {
 		    	diffuseC = vec4(0,0,0,1);
 		        speculrC = vec4(0,0,0,1);
@@ -87,9 +92,10 @@ void getColour(Material material, vec2 textCoord)
 		        speculrC = vec4(0,0,0,1);
 			}
 		}
-		
+    	
 		diffuseC = diffuseC * texture(texture_border, vs_bordercoord);
 		speculrC = speculrC * texture(texture_border, vs_bordercoord);
+		
         if(renderBorder == 0){
 	        if(mod(vs_worldpos.z, 8) > 7) {
 		        diffuseC = diffuseC * texture(texture_border_left, vs_bordercoord);
@@ -199,8 +205,4 @@ void main()
         }
     }
 	fs_shadow  = vec2(calcShadow(vs_mlightviewVertexPos[idx], idx), material.reflectance);
-
-    if ( vs_selected > 0 ) {
-        fs_diffuse = vec3(fs_diffuse.x, fs_diffuse.y, 1);
-    }
 }

@@ -142,6 +142,17 @@ public class ShaderProgram {
     public void setUniform(String uniformName, Vector3f value) {
         glUniform3f(uniforms.get(uniformName), value.x, value.y, value.z);
     }
+    
+    public void setUniform(String uniformName, Vector3f[] values) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            int length = values != null ? values.length : 0;
+            FloatBuffer fb = stack.mallocFloat(3 * length);
+            for (int i = 0; i < length; i++) {
+            	values[i].get(3 * i, fb);
+            }
+            glUniform3fv(uniforms.get(uniformName), fb);
+        }
+    }
 
     public void setUniform(String uniformName, Vector4f value) {
         glUniform4f(uniforms.get(uniformName), value.x, value.y, value.z, value.w);

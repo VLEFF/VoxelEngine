@@ -165,7 +165,7 @@ public class Renderer {
         gBufferShaderProgram.createMaterialUniform("material");
         gBufferShaderProgram.createUniform("isInstanced");
         gBufferShaderProgram.createUniform("modelNonInstancedMatrix");
-        gBufferShaderProgram.createUniform("selectedNonInstanced");
+        gBufferShaderProgram.createUniform("selectedBlocks");
         gBufferShaderProgram.createUniform("jointsMatrix");
         gBufferShaderProgram.createUniform("numCols");
         gBufferShaderProgram.createUniform("numRows");
@@ -179,8 +179,6 @@ public class Renderer {
         gBufferShaderProgram.createUniform("cascadeFarPlanes", ShadowRenderer.NUM_CASCADES);
         gBufferShaderProgram.createUniform("renderShadow");
         gBufferShaderProgram.createUniform("renderBorder");
-
-        gBufferShaderProgram.createUniform("mousePosition");
     }
 
     private void setupDirLightShader() throws Exception {
@@ -288,8 +286,6 @@ public class Renderer {
         }
         gBufferShaderProgram.setUniform("renderShadow", scene.isRenderShadows() ? 1 : 0);
         gBufferShaderProgram.setUniform("renderBorder", scene.isRenderBorder() ? 1 : 0);
-        
-        gBufferShaderProgram.setUniform("mousePosition", new Vector2f((float)mouseInput.getCurrentPos().x, (float)mouseInput.getCurrentPos().y));
 
         renderNonInstancedMeshes(scene);
 
@@ -542,7 +538,7 @@ public class Renderer {
             }
 
             mesh.renderList(mapMeshes.get(mesh), (GameItem gameItem) -> {
-                gBufferShaderProgram.setUniform("selectedNonInstanced", gameItem.isSelected() ? 1.0f : 0.0f);
+                gBufferShaderProgram.setUniform("selectedBlocks", gameItem.getSelectedBlocks().toArray(new Vector3f[gameItem.getSelectedBlocks().size()]));
                 Matrix4f modelMatrix = transformation.buildModelMatrix(gameItem);
                 gBufferShaderProgram.setUniform("modelNonInstancedMatrix", modelMatrix);
                 if (gameItem instanceof AnimGameItem) {

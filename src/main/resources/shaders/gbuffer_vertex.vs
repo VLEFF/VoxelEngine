@@ -12,7 +12,6 @@ layout (location=4) in ivec4 jointIndices;
 layout (location=5) in mat4 modelInstancedMatrix;
 layout (location=6) in vec2 borderCoord;
 layout (location=9) in vec2 texOffset;
-layout (location=10) in float selectedInstanced;
 
 uniform int isInstanced;
 uniform mat4 viewMatrix;
@@ -23,13 +22,11 @@ uniform mat4 lightViewMatrix[NUM_CASCADES];
 uniform mat4 orthoProjectionMatrix[NUM_CASCADES];
 uniform int numCols;
 uniform int numRows;
-uniform float selectedNonInstanced;
 
 out vec2  vs_textcoord;
 out vec2  vs_bordercoord;
 out vec3  vs_worldpos;
 out vec3  vs_normal;
-out float vs_selected;
 out vec4  vs_mlightviewVertexPos[NUM_CASCADES];
 out mat4  vs_modelMatrix;
 out vec4  vs_mvVertexPos;
@@ -41,7 +38,6 @@ void main()
     mat4 modelMatrix;
     if ( isInstanced > 0 )
     {
-        vs_selected = selectedInstanced;
         modelMatrix = modelInstancedMatrix;
 
         initPos = vec4(position, 1.0);
@@ -49,7 +45,6 @@ void main()
     }
     else
     {
-        vs_selected = selectedNonInstanced;
         modelMatrix = modelNonInstancedMatrix;
 
         int count = 0;

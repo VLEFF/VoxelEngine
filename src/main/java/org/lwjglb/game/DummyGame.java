@@ -42,6 +42,8 @@ public class DummyGame implements IGameLogic {
 
     private float lightAngle;
 
+    private Hud hud;
+
     private boolean firstTime;
 
     private boolean sceneChanged;
@@ -53,6 +55,7 @@ public class DummyGame implements IGameLogic {
     public DummyGame() {
         renderer = new Renderer();
         camera = new Camera();
+        hud = new Hud();
         cameraInc = new Vector3f(0.0f, 0.0f, 0.0f);
         angleInc = 0;
         lightAngle = 90;
@@ -62,7 +65,7 @@ public class DummyGame implements IGameLogic {
     @Override
     public void init(Window window) throws Exception {
         renderer.init(window);
-
+        hud.init(window);
         scene = new Scene();
 
         Mesh[] straightRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/monu3.obj", "src/main/resources/models/untitled");
@@ -83,14 +86,21 @@ public class DummyGame implements IGameLogic {
         // Shadows
         scene.setRenderShadows(true);
 
+        float skyBoxScale = 100.0f;
+        SkyBox skyBox = new SkyBox("src/main/resources/models/skybox.obj", new Vector4f(0.65f, 0.65f, 0.65f, 1.0f));
+        skyBox.setScale(skyBoxScale);
+        scene.setSkyBox(skyBox);
+        
+        scene.setSkyBox(skyBox);
+
         // Setup Lights
         setupLights();
 
-        camera.getPosition().x = -17.0f;
-        camera.getPosition().y =  17.0f;
-        camera.getPosition().z = -30.0f;
-        camera.getRotation().x = 20.0f;
-        camera.getRotation().y = 140.f;
+        camera.getPosition().x = 17.0f;
+        camera.getPosition().y =  90.0f;
+        camera.getPosition().z = 30.0f;
+        camera.getRotation().x = 40.0f;
+        camera.getRotation().y = 0f;
     }
 
     private void setupLights() {
@@ -99,6 +109,7 @@ public class DummyGame implements IGameLogic {
 
         // Ambient Light
         sceneLight.setAmbientLight(new Vector3f(0.3f, 0.3f, 0.3f));
+        sceneLight.setSkyBoxLight(new Vector3f(1.0f, 1.0f, 1.0f));
 
         // Directional Light
         float lightIntensity = 0.5f;
@@ -177,12 +188,8 @@ public class DummyGame implements IGameLogic {
         // Update view matrix
         camera.updateViewMatrix();
         for(List<GameItem> items : scene.getGameMeshes().values()) {
-        	mbsd.selectGameItem(items.toArray(new GameItem[items.size()]), window, mouseInput.getCurrentPos(), camera);
-        	for(GameItem item : items) {
-        		if(item.isSelected()) {
-        			System.out.println("selected");
-        		}
-        	}
+        	List<Vector3f> selectedBlocks = mbsd.selectGameItem(items.toArray(new GameItem[items.size()]), window, mouseInput.getCurrentPos(), camera);
+        	hud.setSelectedBlocks(selectedBlocks);
         }
     }
 
@@ -193,12 +200,15 @@ public class DummyGame implements IGameLogic {
             firstTime = false;
         }
         renderer.render(window, mouseInput, camera, scene, sceneChanged);
+        hud.render(window);
     }
 
     @Override
     public void cleanup() {
         renderer.cleanup();
-
         scene.cleanup();
+        if (hud != null) {
+            hud.cleanup();
+        }
     }
 }
