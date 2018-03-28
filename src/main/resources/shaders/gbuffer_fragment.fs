@@ -66,7 +66,7 @@ void getColour(Material material, vec2 textCoord)
 		        for(int i = 0; i < selectedBlocks.length; ++i)
 		    	{
 		    		vec3 selectedBlock = selectedBlocks[i];
-		    		if(vs_worldpos.x > (selectedBlock.x * 8) && vs_worldpos.x < (((selectedBlock.x + 1) * 8)+0.01)
+		    		if(vs_worldpos.x > ((selectedBlock.x * 8)+0.01) && vs_worldpos.x < (((selectedBlock.x + 1) * 8)+0.01)
 		    			&& vs_worldpos.y >= ((selectedBlock.y * 8)+0.01) && vs_worldpos.y < (((selectedBlock.y + 1) * 8)+0.01) 
 		    			&& vs_worldpos.z >= ((selectedBlock.z * 8)+0.01) && vs_worldpos.z < (((selectedBlock.z + 1) * 8)+0.01)) { 
 				    	diffuseC = vec4(1, 0, 0, 1);

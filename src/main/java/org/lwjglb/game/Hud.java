@@ -52,7 +52,7 @@ public class Hud {
         nvgFontFace(vg, FONT_NAME);
         nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
         nvgFillColor(vg, rgba(0x23, 0xa1, 0xf1, 255, colour));
-        for(int i = 0 ; i < selectedBlocks.size() ; i++) {
+        for(int i = 0 ; selectedBlocks != null && i < selectedBlocks.size() ; i++) {
         	Vector3f selectedBlock = selectedBlocks.get(i);
             nvgText(vg, 50, 50 + (i * 25), (selectedBlock.x + 1) + "," +  selectedBlock.y + "," +  (selectedBlock.z + 1));
         }

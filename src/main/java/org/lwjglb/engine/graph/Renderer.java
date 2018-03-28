@@ -538,7 +538,11 @@ public class Renderer {
             }
 
             mesh.renderList(mapMeshes.get(mesh), (GameItem gameItem) -> {
-                gBufferShaderProgram.setUniform("selectedBlocks", gameItem.getSelectedBlocks().toArray(new Vector3f[gameItem.getSelectedBlocks().size()]));
+            	List<Vector3f> selectedBlocks = new ArrayList<>(gameItem.getSelectedBlocks());
+            	while(selectedBlocks.size() < 100) {
+            		selectedBlocks.add(new Vector3f(0,0,0));
+                }
+                gBufferShaderProgram.setUniform("selectedBlocks", selectedBlocks.toArray(new Vector3f[selectedBlocks.size()]));
                 Matrix4f modelMatrix = transformation.buildModelMatrix(gameItem);
                 gBufferShaderProgram.setUniform("modelNonInstancedMatrix", modelMatrix);
                 if (gameItem instanceof AnimGameItem) {

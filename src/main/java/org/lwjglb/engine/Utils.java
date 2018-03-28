@@ -73,25 +73,30 @@ public class Utils {
                 while (fc.read(buffer) != -1) ;
             }
         } else {
-            try (
-                    InputStream source = Utils.class.getResourceAsStream(resource);
-                    ReadableByteChannel rbc = Channels.newChannel(source)) {
-                buffer = createByteBuffer(bufferSize);
-
-                while (true) {
-                    int bytes = rbc.read(buffer);
-                    if (bytes == -1) {
-                        break;
-                    }
-                    if (buffer.remaining() == 0) {
-                        buffer = resizeBuffer(buffer, buffer.capacity() * 2);
-                    }
-                }
-            }
+        	InputStream source = Utils.class.getResourceAsStream(resource);
+            return inputStreamToByteBuffer(source, bufferSize);
         }
 
         buffer.flip();
         return buffer;
+    }
+    
+    public static ByteBuffer inputStreamToByteBuffer(InputStream source, int bufferSize) throws IOException {
+    	try (
+            ReadableByteChannel rbc = Channels.newChannel(source)) {
+    		ByteBuffer buffer = createByteBuffer(bufferSize);
+            while (true) {
+                int bytes = rbc.read(buffer);
+                if (bytes == -1) {
+                    break;
+                }
+                if (buffer.remaining() == 0) {
+                    buffer = resizeBuffer(buffer, buffer.capacity() * 2);
+                }
+            }
+            buffer.flip();
+            return buffer;
+        }
     }
 
     private static ByteBuffer resizeBuffer(ByteBuffer buffer, int newCapacity) {

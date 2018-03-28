@@ -23,6 +23,7 @@ import org.lwjglb.engine.graph.weather.Fog;
 import org.lwjglb.engine.items.GameItem;
 import org.lwjglb.engine.items.SkyBox;
 import org.lwjglb.engine.loaders.assimp.StaticMeshesLoader;
+import org.lwjglb.engine.loaders.vox.VOXLoader;
 
 public class DummyGame implements IGameLogic {
 
@@ -69,9 +70,13 @@ public class DummyGame implements IGameLogic {
         scene = new Scene();
 
         Mesh[] straightRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/monu3.obj", "src/main/resources/models/untitled");
+        /*Mesh[] teaPotMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/deer.obj", "src/main/resources/models/untitled");
         Mesh[] curvedRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-1.obj", "src/main/resources/models/untitled");
         Mesh[] planeMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-2.obj", "src/main/resources/models/untitled");
-        Mesh[] oldManMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-3.obj", "src/main/resources/models/untitled");
+        Mesh[] oldManMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-3.obj", "src/main/resources/models/untitled");*/
+        
+
+        Mesh testVoxMesh = VOXLoader.loadMesh("src/main/resources/models/untitled/monu3.vox");
         
 
         List<GameItem> cubes = new ArrayList<>();
@@ -79,7 +84,11 @@ public class DummyGame implements IGameLogic {
        
         GameItem straightRoad = new GameItem(straightRoadMesh);
         straightRoad.setPosition(0, 0, 0);
-        cubes.add(straightRoad);
+        //cubes.add(straightRoad);
+        
+        GameItem testVox = new GameItem(testVoxMesh);
+        testVox.setPosition(2, 0, 0);
+        cubes.add(testVox);
         
         scene.setGameItems(cubes.toArray(new GameItem[cubes.size()]));
 
@@ -89,8 +98,6 @@ public class DummyGame implements IGameLogic {
         float skyBoxScale = 100.0f;
         SkyBox skyBox = new SkyBox("src/main/resources/models/skybox.obj", new Vector4f(0.65f, 0.65f, 0.65f, 1.0f));
         skyBox.setScale(skyBoxScale);
-        scene.setSkyBox(skyBox);
-        
         scene.setSkyBox(skyBox);
 
         // Setup Lights
