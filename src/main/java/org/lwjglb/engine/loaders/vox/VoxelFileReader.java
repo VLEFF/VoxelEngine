@@ -15,10 +15,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.joml.Vector4f;
 import org.lwjglb.engine.Utils;
 import org.lwjglb.engine.graph.Material;
@@ -88,12 +91,10 @@ class VoxelFileReader {
 					int y = input.read();
 					matrice[x][y][z] = (byte) (input.read() & 0xff);
 				}
-				
-				float[] positions = new float[numVoxels * 3 * 6 * 4];
-				float[] textCoords = new float[numVoxels * 2 * 6 * 4];
-				float[] normals = new float[numVoxels * 3 * 6 * 4];
-				int[] indices = new int[numVoxels * 3 * 12];
-				int numPixel = 0;
+				List<Float> positions = new ArrayList<Float>();
+				List<Float> textCoords = new ArrayList<Float>();
+				List<Float> normals = new ArrayList<Float>();
+				List<Integer> indices = new ArrayList<Integer>();
 				for (int x = 0 ; x < width ; x++) {
 					for (int y = 0 ; y < height ; y++) {
 						for (int z = 0 ; z < depth ; z++) {
@@ -104,294 +105,298 @@ class VoxelFileReader {
 								
 								if(x == width - 1 || matrice[x + 1][y][z] == null) {
 									//right
-									positions[(numPixel * 3 * 6 * 4) + 12] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 13] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 14] = 1 + z;
-									positions[(numPixel * 3 * 6 * 4) + 15] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 16] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 17] = 0 + z;
-									positions[(numPixel * 3 * 6 * 4) + 18] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 19] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 20] = 0 + z;
-									positions[(numPixel * 3 * 6 * 4) + 21] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 22] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 23] = 1 + z;
+									positions.add(1f + x);
+									positions.add(0f + y);
+									positions.add(1f + z);
+									positions.add(1f + x);
+									positions.add(0f + y);
+									positions.add(0f + z);
+									positions.add(1f + x);
+									positions.add(1f + y);
+									positions.add(0f + z);
+									positions.add(1f + x);
+									positions.add(1f + y);
+									positions.add(1f + z);
 									
 									//right
-									indices[(numPixel * 3 * 12) + 6] = 4 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 7] = 5 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 8] = 6 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 9] = 4 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 10] = 6 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 11] = 7 + (numPixel * 6 * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(1 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(3 + (indices.size() / 6) * 4);
 
 									//right
-									normals[(numPixel * 3 * 6 * 4) + 12] = 1;
-									normals[(numPixel * 3 * 6 * 4) + 13] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 14] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 15] = 1;
-									normals[(numPixel * 3 * 6 * 4) + 16] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 17] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 18] = 1;
-									normals[(numPixel * 3 * 6 * 4) + 19] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 20] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 21] = 1;
-									normals[(numPixel * 3 * 6 * 4) + 22] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 23] = 0;
+									normals.add(1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(1f);
+									normals.add(0f);
+									normals.add(0f);
 
 									//right
-									textCoords[(numPixel * 2 * 6 * 4) + 8] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 9] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 10] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 11] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 12] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 13] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 14] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 15] = 0.5f;
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
 								}
 								if(x == 0 || matrice[x - 1][y][z] == null) {
 									//left
-									positions[(numPixel * 3 * 6 * 4) + 0] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 1] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 2] = 1 + z;
-									positions[(numPixel * 3 * 6 * 4) + 3] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 4] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 5] = 0 + z;
-									positions[(numPixel * 3 * 6 * 4) + 6] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 7] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 8] = 0 + z;
-									positions[(numPixel * 3 * 6 * 4) + 9] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 10] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 11] = 1 + z;
+									positions.add(0f + x);
+									positions.add(1f + y);
+									positions.add(1f + z);
+									positions.add(0f + x);
+									positions.add(1f + y);
+									positions.add(0f + z);
+									positions.add(0f + x);
+									positions.add(0f + y);
+									positions.add(0f + z);
+									positions.add(0f + x);
+									positions.add(0f + y);
+									positions.add(1f + z);
 									
 									//left
-									indices[(numPixel * 3 * 12) + 0] = 0 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 1] = 1 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 2] = 2 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 3] = 0 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 4] = 2 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 5] = 3 + (numPixel * 6 * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(1 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(3 + (indices.size() / 6) * 4);
 
 									//left
-									normals[(numPixel * 3 * 6 * 4) + 0] = -1;
-									normals[(numPixel * 3 * 6 * 4) + 1] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 2] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 3] = -1;
-									normals[(numPixel * 3 * 6 * 4) + 4] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 5] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 6] = -1;
-									normals[(numPixel * 3 * 6 * 4) + 7] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 8] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 9] = -1;
-									normals[(numPixel * 3 * 6 * 4) + 10] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 11] = 0;
+									normals.add(-1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(-1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(-1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(-1f);
+									normals.add(0f);
+									normals.add(0f);
 									
 									//left
-									textCoords[(numPixel * 2 * 6 * 4) + 0] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 1] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 2] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 3] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 4] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 5] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 6] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 7] = 0.5f;
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
 									
 								}
 								if(y == height - 1 || matrice[x][y + 1][z] == null) {
 									//top
-									positions[(numPixel * 3 * 6 * 4) + 60] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 61] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 62] = 1 + z;
-									positions[(numPixel * 3 * 6 * 4) + 63] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 64] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 65] = 1 + z;
-									positions[(numPixel * 3 * 6 * 4) + 66] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 67] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 68] = 0 + z;
-									positions[(numPixel * 3 * 6 * 4) + 69] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 70] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 71] = 0 + z;
+									positions.add(0f + x);
+									positions.add(1f + y);
+									positions.add(1f + z);
+									positions.add(1f + x);
+									positions.add(1f + y);
+									positions.add(1f + z);
+									positions.add(1f + x);
+									positions.add(1f + y);
+									positions.add(0f + z);
+									positions.add(0f + x);
+									positions.add(1f + y);
+									positions.add(0f + z);
 									
 									//top
-									indices[(numPixel * 3 * 12) + 30] = 20 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 31] = 21 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 32] = 22 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 33] = 20 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 34] = 22 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 35] = 23 + (numPixel * 6 * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(1 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(3 + (indices.size() / 6) * 4);
 									
 									//top
-									normals[(numPixel * 3 * 6 * 4) + 60] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 61] = 1;
-									normals[(numPixel * 3 * 6 * 4) + 62] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 63] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 64] = 1;
-									normals[(numPixel * 3 * 6 * 4) + 65] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 66] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 67] = 1;
-									normals[(numPixel * 3 * 6 * 4) + 68] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 69] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 70] = 1;
-									normals[(numPixel * 3 * 6 * 4) + 71] = 0;
+									normals.add(0f);
+									normals.add(1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(1f);
+									normals.add(0f);
 									
 									//top
-									textCoords[(numPixel * 2 * 6 * 4) + 40] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 41] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 42] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 43] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 44] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 45] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 46] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 47] = 0.5f;
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
 								}
 								if(y == 0 || matrice[x][y - 1][z] == null) {
 									//bottom
-									positions[(numPixel * 3 * 6 * 4) + 48] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 49] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 50] = 0 + z;
-									positions[(numPixel * 3 * 6 * 4) + 51] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 52] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 53] = 0 + z;
-									positions[(numPixel * 3 * 6 * 4) + 54] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 55] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 56] = 1 + z;
-									positions[(numPixel * 3 * 6 * 4) + 57] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 58] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 59] = 1 + z;
+									positions.add(0f + x);
+									positions.add(0f + y);
+									positions.add(0f + z);
+									positions.add(1f + x);
+									positions.add(0f + y);
+									positions.add(0f + z);
+									positions.add(1f + x);
+									positions.add(0f + y);
+									positions.add(1f + z);
+									positions.add(0f + x);
+									positions.add(0f + y);
+									positions.add(1f + z);
 									
 									//bottom
-									indices[(numPixel * 3 * 12) + 24] = 16 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 25] = 17 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 26] = 18 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 27] = 16 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 28] = 18 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 29] = 19 + (numPixel * 6 * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(1 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(3 + (indices.size() / 6) * 4);
 									
 									//bottom
-									normals[(numPixel * 3 * 6 * 4) + 48] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 49] = -1;
-									normals[(numPixel * 3 * 6 * 4) + 50] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 51] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 52] = -1;
-									normals[(numPixel * 3 * 6 * 4) + 53] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 54] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 55] = -1;
-									normals[(numPixel * 3 * 6 * 4) + 56] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 57] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 58] = -1;
-									normals[(numPixel * 3 * 6 * 4) + 59] = 0;
+									normals.add(0f);
+									normals.add(-1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(-1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(-1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(-1f);
+									normals.add(0f);
 									
 									//bottom
-									textCoords[(numPixel * 2 * 6 * 4) + 32] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 33] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 34] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 35] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 36] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 37] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 38] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 39] = 0.5f;
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
 								}
 								if(z == depth - 1 || matrice[x][y][z + 1] == null) {
 									//front
-									positions[(numPixel * 3 * 6 * 4) + 24] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 25] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 26] = 1 + z;
-									positions[(numPixel * 3 * 6 * 4) + 27] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 28] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 29] = 1 + z;
-									positions[(numPixel * 3 * 6 * 4) + 30] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 31] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 32] = 1 + z;
-									positions[(numPixel * 3 * 6 * 4) + 33] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 34] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 35] = 1 + z;
+									positions.add(1f + x);
+									positions.add(0f + y);
+									positions.add(1f + z);
+									positions.add(1f + x);
+									positions.add(1f + y);
+									positions.add(1f + z);
+									positions.add(0f + x);
+									positions.add(1f + y);
+									positions.add(1f + z);
+									positions.add(0f + x);
+									positions.add(0f + y);
+									positions.add(1f + z);
 									
 									//front
-									indices[(numPixel * 3 * 12) + 12] = 8 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 13] = 9 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 14] = 10 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 15] = 8 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 16] = 10 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 17] = 11 + (numPixel * 6 * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(1 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(3 + (indices.size() / 6) * 4);
 									
 									//front
-									normals[(numPixel * 3 * 6 * 4) + 24] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 25] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 26] = 1;
-									normals[(numPixel * 3 * 6 * 4) + 27] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 28] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 29] = 1;
-									normals[(numPixel * 3 * 6 * 4) + 30] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 31] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 32] = 1;
-									normals[(numPixel * 3 * 6 * 4) + 33] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 34] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 35] = 1;
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(1f);
 									
 									//front
-									textCoords[(numPixel * 2 * 6 * 4) + 16] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 17] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 18] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 19] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 20] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 21] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 22] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 23] = 0.5f;
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
 								}
 								if(z == 0 || matrice[x][y][z - 1] == null) {
 									//back
-									positions[(numPixel * 3 * 6 * 4) + 36] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 37] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 38] = 0 + z;
-									positions[(numPixel * 3 * 6 * 4) + 39] = 0 + x;
-									positions[(numPixel * 3 * 6 * 4) + 40] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 41] = 0 + z;
-									positions[(numPixel * 3 * 6 * 4) + 42] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 43] = 1 + y;
-									positions[(numPixel * 3 * 6 * 4) + 44] = 0 + z;
-									positions[(numPixel * 3 * 6 * 4) + 45] = 1 + x;
-									positions[(numPixel * 3 * 6 * 4) + 46] = 0 + y;
-									positions[(numPixel * 3 * 6 * 4) + 47] = 0 + z;
+									positions.add(0f + x);
+									positions.add(0f + y);
+									positions.add(0f + z);
+									positions.add(0f + x);
+									positions.add(1f + y);
+									positions.add(0f + z);
+									positions.add(1f + x);
+									positions.add(1f + y);
+									positions.add(0f + z);
+									positions.add(1f + x);
+									positions.add(0f + y);
+									positions.add(0f + z);
 									
 									//back
-									indices[(numPixel * 3 * 12) + 18] = 12 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 19] = 13 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 20] = 14 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 21] = 12 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 22] = 14 + (numPixel * 6 * 4);
-									indices[(numPixel * 3 * 12) + 23] = 15 + (numPixel * 6 * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(1 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(0 + (indices.size() / 6) * 4);
+									indices.add(2 + (indices.size() / 6) * 4);
+									indices.add(3 + (indices.size() / 6) * 4);
 									
 									//back
-									normals[(numPixel * 3 * 6 * 4) + 36] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 37] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 38] = -1;
-									normals[(numPixel * 3 * 6 * 4) + 39] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 40] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 41] = -1;
-									normals[(numPixel * 3 * 6 * 4) + 42] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 43] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 44] = -1;
-									normals[(numPixel * 3 * 6 * 4) + 45] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 46] = 0;
-									normals[(numPixel * 3 * 6 * 4) + 47] = -1;
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(-1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(-1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(-1f);
+									normals.add(0f);
+									normals.add(0f);
+									normals.add(-1f);
 									
 									//back
-									textCoords[(numPixel * 2 * 6 * 4) + 24] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 25] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 26] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 27] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 28] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 29] = 0.5f;
-									textCoords[(numPixel * 2 * 6 * 4) + 30] = colorCoord;
-									textCoords[(numPixel * 2 * 6 * 4) + 31] = 0.5f;
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
+									textCoords.add(colorCoord);
+									textCoords.add(0.5f);
 								}
-								numPixel++;
 							}
 							
 						}
 					}
 				}
-				mesh = new Mesh(positions, textCoords, normals, indices);
+				
+				float[] positionsArray = ArrayUtils.toPrimitive(positions.toArray(new Float[positions.size()]));
+				float[] textCoordsArray = ArrayUtils.toPrimitive(textCoords.toArray(new Float[textCoords.size()]));
+				float[] normalsArray = ArrayUtils.toPrimitive(normals.toArray(new Float[normals.size()]));
+				int[] indicesArray = ArrayUtils.toPrimitive(indices.toArray(new Integer[indices.size()]));
+				mesh = new Mesh(positionsArray, textCoordsArray, normalsArray, indicesArray);
 			} else if (chunk.id == magicValue('R', 'G', 'B', 'A')) {
 
 				// MagicaVoxel documentation:
