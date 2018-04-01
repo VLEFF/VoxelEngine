@@ -1,15 +1,12 @@
 package org.lwjglb.engine.items;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjglb.engine.graph.Mesh;
 
 public class GameItem {
 
-    private List<Vector3f> selectedBlocks;
+    private boolean selected;
 
     private Mesh[] meshes;
 
@@ -26,7 +23,7 @@ public class GameItem {
     private boolean insideFrustum;
 
     public GameItem() {
-        selectedBlocks = new ArrayList<>();
+    	selected = false;
         position = new Vector3f(0, 0, 0);
         scale = 1;
         rotation = new Quaternionf();
@@ -53,10 +50,10 @@ public class GameItem {
         return textPos;
     }
     
-    public List<Vector3f> getSelectedBlocks() {
-		return selectedBlocks;
+    public boolean isSelected() {
+		return selected;
 	}
-
+    
     public final void setPosition(float x, float y, float z) {
         this.position.x = x;
         this.position.y = y;
@@ -102,9 +99,9 @@ public class GameItem {
         }
     }
     
-    public void setSelectedBlocks(List<Vector3f> selectedBlocks) {
-		this.selectedBlocks = selectedBlocks;
-    }
+    public void setSelected(boolean selected) {
+		this.selected = selected;
+	}
     
     public void setTextPos(int textPos) {
         this.textPos = textPos;

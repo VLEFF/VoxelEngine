@@ -1,6 +1,7 @@
 package org.lwjglb.engine;
 
 import org.lwjglb.engine.items.SkyBox;
+import org.lwjglb.engine.items.Board;
 import org.lwjglb.engine.items.GameItem;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +17,8 @@ public class Scene {
     private final Map<Mesh, List<GameItem>> meshMap;
 
     private final Map<InstancedMesh, List<GameItem>> instancedMeshMap;
+    
+    private Board board;
 
     private SkyBox skyBox;
 
@@ -30,8 +33,8 @@ public class Scene {
     private IParticleEmitter[] particleEmitters;
 
     public Scene() {
-        meshMap = new HashMap();
-        instancedMeshMap = new HashMap();
+        meshMap = new HashMap<>();
+        instancedMeshMap = new HashMap<>();
         fog = Fog.NOFOG;
         renderShadows = true;
     }
@@ -83,6 +86,14 @@ public class Scene {
             }
         }
     }
+    
+    public Board getBoard() {
+		return board;
+	}
+    
+    public void setBoard(Board board) {
+		this.board = board;
+	}
 
     public SkyBox getSkyBox() {
         return skyBox;

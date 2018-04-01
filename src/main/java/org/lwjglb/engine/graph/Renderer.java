@@ -1,13 +1,14 @@
 package org.lwjglb.engine.graph;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import org.lwjglb.engine.graph.lights.PointLight;
 import org.lwjglb.engine.graph.lights.DirectionalLight;
 import java.util.List;
 import java.util.Map;
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import static org.lwjgl.opengl.GL11.*;
@@ -165,7 +166,7 @@ public class Renderer {
         gBufferShaderProgram.createMaterialUniform("material");
         gBufferShaderProgram.createUniform("isInstanced");
         gBufferShaderProgram.createUniform("modelNonInstancedMatrix");
-        gBufferShaderProgram.createUniform("selectedBlocks");
+        gBufferShaderProgram.createUniform("selectedNonInstanced");
         gBufferShaderProgram.createUniform("jointsMatrix");
         gBufferShaderProgram.createUniform("numCols");
         gBufferShaderProgram.createUniform("numRows");
@@ -527,7 +528,12 @@ public class Renderer {
         gBufferShaderProgram.setUniform("isInstanced", 0);
 
         // Render each mesh with the associated game Items
-        Map<Mesh, List<GameItem>> mapMeshes = scene.getGameMeshes();
+        Map<Mesh, List<GameItem>> mapMeshes = new HashMap<>(scene.getGameMeshes());
+        if(scene.getBoard() != null) {
+	        for(GameItem tile : scene.getBoard().getTiles()) {
+	        	mapMeshes.put(tile.getMesh(), Arrays.asList(tile));
+	        }
+        }
         for (Mesh mesh : mapMeshes.keySet()) {
             gBufferShaderProgram.setUniform("material", mesh.getMaterial());
 
@@ -538,11 +544,7 @@ public class Renderer {
             }
 
             mesh.renderList(mapMeshes.get(mesh), (GameItem gameItem) -> {
-            	List<Vector3f> selectedBlocks = new ArrayList<>(gameItem.getSelectedBlocks());
-            	while(selectedBlocks.size() < 100) {
-            		selectedBlocks.add(new Vector3f(0,0,0));
-                }
-                gBufferShaderProgram.setUniform("selectedBlocks", selectedBlocks.toArray(new Vector3f[selectedBlocks.size()]));
+                gBufferShaderProgram.setUniform("selectedNonInstanced", gameItem.isSelected() ? 1.0f : 0.0f);
                 Matrix4f modelMatrix = transformation.buildModelMatrix(gameItem);
                 gBufferShaderProgram.setUniform("modelNonInstancedMatrix", modelMatrix);
                 if (gameItem instanceof AnimGameItem) {

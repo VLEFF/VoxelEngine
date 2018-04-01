@@ -9,6 +9,7 @@ in vec3  vs_normal;
 in vec4  vs_mlightviewVertexPos[NUM_CASCADES];
 in mat4  vs_modelMatrix;
 in vec4  vs_mvVertexPos;
+in float vs_selected;
 
 layout (location = 0) out vec3 fs_worldpos;
 layout (location = 1) out vec3 fs_diffuse;
@@ -42,9 +43,6 @@ uniform mat4 orthoProjectionMatrix[NUM_CASCADES];
 uniform int renderShadow;
 uniform int renderBorder;
 
-uniform vec3 selectedBlocks[100];
-uniform vec2 mousePosition;
-
 vec4 diffuseC;
 vec4 speculrC;
 
@@ -62,19 +60,6 @@ void getColour(Material material, vec2 textCoord)
     }
     if(renderBorder == 1){
         if(vs_normal.y != 0) {
-        	if(vs_normal.y >0) {
-		        for(int i = 0; i < selectedBlocks.length; ++i)
-		    	{
-		    		vec3 selectedBlock = selectedBlocks[i];
-		    		if(vs_worldpos.x > ((selectedBlock.x * 8)+0.01) && vs_worldpos.x < (((selectedBlock.x + 1) * 8)+0.01)
-		    			&& vs_worldpos.y >= ((selectedBlock.y * 8)+0.01) && vs_worldpos.y < (((selectedBlock.y + 1) * 8)+0.01) 
-		    			&& vs_worldpos.z >= ((selectedBlock.z * 8)+0.01) && vs_worldpos.z < (((selectedBlock.z + 1) * 8)+0.01)) { 
-				    	diffuseC = vec4(1, 0, 0, 1);
-				        speculrC = vec4(1, 0, 0, 1);
-				        break;
-			        }
-		    	}
-		    }
 	        if(mod(vs_worldpos.z, 8) > 7.8) {
 		    	diffuseC = vec4(0,0,0,1);
 		        speculrC = vec4(0,0,0,1);
@@ -205,4 +190,8 @@ void main()
         }
     }
 	fs_shadow  = vec2(calcShadow(vs_mlightviewVertexPos[idx], idx), material.reflectance);
+	
+    if ( vs_selected > 0 && vs_normal.y > 0 ) {
+        fs_diffuse = vec3(fs_diffuse.x, fs_diffuse.y, 1);
+    }
 }

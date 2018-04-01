@@ -1,6 +1,5 @@
 package org.lwjglb.game;
 
-import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -19,9 +18,10 @@ import org.lwjglb.engine.graph.Mesh;
 import org.lwjglb.engine.graph.Renderer;
 import org.lwjglb.engine.graph.lights.DirectionalLight;
 import org.lwjglb.engine.graph.lights.PointLight;
-import org.lwjglb.engine.graph.weather.Fog;
+import org.lwjglb.engine.items.Board;
 import org.lwjglb.engine.items.GameItem;
 import org.lwjglb.engine.items.SkyBox;
+import org.lwjglb.engine.items.Tile;
 import org.lwjglb.engine.loaders.assimp.StaticMeshesLoader;
 import org.lwjglb.engine.loaders.vox.VOXLoader;
 
@@ -76,19 +76,14 @@ public class DummyGame implements IGameLogic {
         Mesh[] oldManMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-3.obj", "src/main/resources/models/untitled");*/
         
 
-        Mesh testVoxMesh = VOXLoader.loadMesh("src/main/resources/models/untitled/monu3.vox");
-        
+        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/monu3.vox");
+        scene.setBoard(board);
 
         List<GameItem> cubes = new ArrayList<>();
-        float f = (float) Math.sqrt(2);
-       
+        
         GameItem straightRoad = new GameItem(straightRoadMesh);
         straightRoad.setPosition(0, 0, 0);
         //cubes.add(straightRoad);
-        
-        GameItem testVox = new GameItem(testVoxMesh);
-        testVox.setPosition(2, 0, 0);
-        cubes.add(testVox);
         
         scene.setGameItems(cubes.toArray(new GameItem[cubes.size()]));
 
@@ -194,10 +189,8 @@ public class DummyGame implements IGameLogic {
 
         // Update view matrix
         camera.updateViewMatrix();
-        for(List<GameItem> items : scene.getGameMeshes().values()) {
-        	List<Vector3f> selectedBlocks = mbsd.selectGameItem(items.toArray(new GameItem[items.size()]), window, mouseInput.getCurrentPos(), camera);
-        	hud.setSelectedBlocks(selectedBlocks);
-        }
+    	boolean selected = mbsd.selectGameItem(scene.getBoard(), window, mouseInput.getCurrentPos(), camera);
+    	hud.setText(selected + "");
     }
 
     @Override

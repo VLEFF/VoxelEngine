@@ -1,13 +1,12 @@
 package org.lwjglb.game;
 
-import java.util.List;
-
 import org.joml.Matrix4f;
 import org.joml.Vector2d;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjglb.engine.Window;
 import org.lwjglb.engine.graph.Camera;
+import org.lwjglb.engine.items.Board;
 import org.lwjglb.engine.items.GameItem;
 
 public class MouseBoxSelectionDetector extends CameraBoxSelectionDetector {
@@ -28,8 +27,18 @@ public class MouseBoxSelectionDetector extends CameraBoxSelectionDetector {
         tmpVec = new Vector4f();
     }
     
-    public List<Vector3f> selectGameItem(GameItem[] gameItems, Window window, Vector2d mousePos, Camera camera) {
-        // Transform mouse coordinates into normalized spaze [-1, 1]
+    public boolean selectGameItem(GameItem[] gameItems, Window window, Vector2d mousePos, Camera camera) {
+    	updateMouseDir(window, mousePos, camera);
+        return selectGameItem(gameItems, camera.getPosition(), mouseDir);
+    }
+    
+    public boolean selectGameItem(Board board, Window window, Vector2d mousePos, Camera camera) {
+    	updateMouseDir(window, mousePos, camera);
+        return selectGameItem(board, camera.getPosition(), mouseDir);
+    }
+
+	private void updateMouseDir(Window window, Vector2d mousePos, Camera camera) {
+    	// Transform mouse coordinates into normalized spaze [-1, 1]
         int wdwWitdh = window.getWidth();
         int wdwHeight = window.getHeight();
         
@@ -51,7 +60,5 @@ public class MouseBoxSelectionDetector extends CameraBoxSelectionDetector {
         tmpVec.mul(invViewMatrix);
         
         mouseDir.set(tmpVec.x, tmpVec.y, tmpVec.z);
-
-        return selectGameItem(gameItems, camera.getPosition(), mouseDir);
     }
 }

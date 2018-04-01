@@ -27,8 +27,8 @@ public class Hud {
     private NVGColor colour;
 
     private ByteBuffer fontBuffer;
-
-    private List<Vector3f> selectedBlocks;
+    
+    private String text = "";
 
     public void init(Window window) throws Exception {
         this.vg = window.getOptions().antialiasing ? nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES) : nvgCreate(NVG_STENCIL_STROKES);
@@ -52,10 +52,7 @@ public class Hud {
         nvgFontFace(vg, FONT_NAME);
         nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
         nvgFillColor(vg, rgba(0x23, 0xa1, 0xf1, 255, colour));
-        for(int i = 0 ; selectedBlocks != null && i < selectedBlocks.size() ; i++) {
-        	Vector3f selectedBlock = selectedBlocks.get(i);
-            nvgText(vg, 50, 50 + (i * 25), (selectedBlock.x + 1) + "," +  selectedBlock.y + "," +  (selectedBlock.z + 1));
-        }
+        nvgText(vg, 50, 50, text);
 
 
         nvgEndFrame(vg);
@@ -64,14 +61,6 @@ public class Hud {
         window.restoreState();
     }
     
-    public List<Vector3f> getSelectedBlocks() {
-		return selectedBlocks;
-	}
-    
-    public void setSelectedBlocks(List<Vector3f> selectedBlocks) {
-		this.selectedBlocks = selectedBlocks;
-	}
-
     private NVGColor rgba(int r, int g, int b, int a, NVGColor colour) {
         colour.r(r / 255.0f);
         colour.g(g / 255.0f);
@@ -84,4 +73,12 @@ public class Hud {
     public void cleanup() {
         nvgDelete(vg);
     }
+    
+    public String getText() {
+		return text;
+	}
+    
+    public void setText(String text) {
+		this.text = text;
+	}
 }
