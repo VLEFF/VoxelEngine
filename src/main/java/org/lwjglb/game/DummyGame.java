@@ -69,21 +69,21 @@ public class DummyGame implements IGameLogic {
         hud.init(window);
         scene = new Scene();
 
-        Mesh[] straightRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/monu3.obj", "src/main/resources/models/untitled");
+        //Mesh[] straightRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/monu3.obj", "src/main/resources/models/untitled");
         /*Mesh[] teaPotMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/deer.obj", "src/main/resources/models/untitled");
         Mesh[] curvedRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-1.obj", "src/main/resources/models/untitled");
         Mesh[] planeMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-2.obj", "src/main/resources/models/untitled");
         Mesh[] oldManMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-3.obj", "src/main/resources/models/untitled");*/
         
 
-        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/monu3.vox");
+        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/monu3-bis.vox");
         scene.setBoard(board);
 
         List<GameItem> cubes = new ArrayList<>();
         
-        GameItem straightRoad = new GameItem(straightRoadMesh);
+        /*GameItem straightRoad = new GameItem(straightRoadMesh);
         straightRoad.setPosition(0, 0, 0);
-        //cubes.add(straightRoad);
+        cubes.add(straightRoad);*/
         
         scene.setGameItems(cubes.toArray(new GameItem[cubes.size()]));
 
@@ -189,8 +189,10 @@ public class DummyGame implements IGameLogic {
 
         // Update view matrix
         camera.updateViewMatrix();
-    	boolean selected = mbsd.selectGameItem(scene.getBoard(), window, mouseInput.getCurrentPos(), camera);
-    	hud.setText(selected + "");
+        if(scene.getBoard() != null) {
+	    	boolean selected = mbsd.selectGameItem(scene.getBoard(), window, mouseInput.getCurrentPos(), camera);
+	    	hud.setText(selected + "");
+        }
     }
 
     @Override

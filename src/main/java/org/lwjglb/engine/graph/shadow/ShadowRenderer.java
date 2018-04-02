@@ -1,6 +1,8 @@
 package org.lwjglb.engine.graph.shadow;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.joml.Matrix4f;
@@ -118,7 +120,12 @@ public class ShadowRenderer {
         depthShaderProgram.setUniform("isInstanced", 0);
 
         // Render each mesh with the associated game Items
-        Map<Mesh, List<GameItem>> mapMeshes = scene.getGameMeshes();
+        Map<Mesh, List<GameItem>> mapMeshes = new HashMap<>(scene.getGameMeshes());
+        if(scene.getBoard() != null) {
+	        for(GameItem tile : scene.getBoard().getTiles()) {
+	        	mapMeshes.put(tile.getMesh(), Arrays.asList(tile));
+	        }
+        }
         for (Mesh mesh : mapMeshes.keySet()) {
             mesh.renderList(mapMeshes.get(mesh), (GameItem gameItem) -> {
                 Matrix4f modelMatrix = transformation.buildModelMatrix(gameItem);
