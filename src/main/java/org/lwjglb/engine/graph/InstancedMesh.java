@@ -141,7 +141,9 @@ public class InstancedMesh extends Mesh {
             
             // Selected data or scaling for billboard
             int buffPos = INSTANCE_SIZE_FLOATS * i + MATRIX_SIZE_FLOATS + 2;
-            this.instanceDataBuffer.put(buffPos, billBoard ? gameItem.getScale() : gameItem.isSelected() ? 1 : 0);
+            this.instanceDataBuffer.put(buffPos, gameItem.isHovered() ? 1 : 0);
+            this.instanceDataBuffer.put(buffPos + 1, billBoard ? gameItem.getScale() : gameItem.isSelected() ? 1 : 0);
+            this.instanceDataBuffer.put(buffPos + 2, gameItem.isHighlighted() ? 1 : 0);
 
             i++;
         }

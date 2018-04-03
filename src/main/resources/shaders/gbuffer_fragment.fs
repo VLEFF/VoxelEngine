@@ -9,7 +9,9 @@ in vec3  vs_normal;
 in vec4  vs_mlightviewVertexPos[NUM_CASCADES];
 in mat4  vs_modelMatrix;
 in vec4  vs_mvVertexPos;
+in float vs_hovered;
 in float vs_selected;
+in float vs_highlighted;
 
 layout (location = 0) out vec3 fs_worldpos;
 layout (location = 1) out vec3 fs_diffuse;
@@ -191,7 +193,12 @@ void main()
     }
 	fs_shadow  = vec2(calcShadow(vs_mlightviewVertexPos[idx], idx), material.reflectance);
 	
+    
     if ( vs_selected > 0 && vs_normal.y > 0 ) {
+        fs_diffuse = vec3(1, fs_diffuse.y, fs_diffuse.y);
+    } else if ( vs_hovered > 0 && vs_normal.y > 0 ) {
         fs_diffuse = vec3(fs_diffuse.x, fs_diffuse.y, 1);
+    } else if ( vs_highlighted > 0 && vs_normal.y > 0 ) {
+        fs_diffuse = vec3(fs_diffuse.x, 1,fs_diffuse.z);
     }
 }

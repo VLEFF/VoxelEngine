@@ -27,14 +27,14 @@ public class MouseBoxSelectionDetector extends CameraBoxSelectionDetector {
         tmpVec = new Vector4f();
     }
     
-    public boolean selectGameItem(GameItem[] gameItems, Window window, Vector2d mousePos, Camera camera) {
+    public boolean hoverGameItem(GameItem[] gameItems, Window window, Vector2d mousePos, Camera camera) {
     	updateMouseDir(window, mousePos, camera);
-        return selectGameItem(gameItems, camera.getPosition(), mouseDir);
+        return hoverGameItem(gameItems, camera.getPosition(), mouseDir);
     }
     
-    public boolean selectGameItem(Board board, Window window, Vector2d mousePos, Camera camera) {
+    public boolean hoverGameItem(Board board, Window window, Vector2d mousePos, Camera camera) {
     	updateMouseDir(window, mousePos, camera);
-        return selectGameItem(board, camera.getPosition(), mouseDir);
+        return hoverGameItem(board, camera.getPosition(), mouseDir);
     }
 
 	private void updateMouseDir(Window window, Vector2d mousePos, Camera camera) {

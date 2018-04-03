@@ -6,7 +6,9 @@ import org.lwjglb.engine.graph.Mesh;
 
 public class GameItem {
 
+    private boolean hovered;
     private boolean selected;
+    private boolean highlighted;
 
     private Mesh[] meshes;
 
@@ -49,10 +51,6 @@ public class GameItem {
     public int getTextPos() {
         return textPos;
     }
-    
-    public boolean isSelected() {
-		return selected;
-	}
     
     public final void setPosition(float x, float y, float z) {
         this.position.x = x;
@@ -99,11 +97,31 @@ public class GameItem {
         }
     }
     
-    public void setSelected(boolean selected) {
+    public boolean isHovered() {
+		return hovered;
+	}
+
+	public void setHovered(boolean hovered) {
+		this.hovered = hovered;
+	}
+
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
 		this.selected = selected;
 	}
-    
-    public void setTextPos(int textPos) {
+
+	public boolean isHighlighted() {
+		return highlighted;
+	}
+
+	public void setHighlighted(boolean highlighted) {
+		this.highlighted = highlighted;
+	}
+
+	public void setTextPos(int textPos) {
         this.textPos = textPos;
     }
 

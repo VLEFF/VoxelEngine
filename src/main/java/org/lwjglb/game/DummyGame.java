@@ -14,15 +14,12 @@ import org.lwjglb.engine.Scene;
 import org.lwjglb.engine.SceneLight;
 import org.lwjglb.engine.Window;
 import org.lwjglb.engine.graph.Camera;
-import org.lwjglb.engine.graph.Mesh;
 import org.lwjglb.engine.graph.Renderer;
 import org.lwjglb.engine.graph.lights.DirectionalLight;
 import org.lwjglb.engine.graph.lights.PointLight;
 import org.lwjglb.engine.items.Board;
 import org.lwjglb.engine.items.GameItem;
 import org.lwjglb.engine.items.SkyBox;
-import org.lwjglb.engine.items.Tile;
-import org.lwjglb.engine.loaders.assimp.StaticMeshesLoader;
 import org.lwjglb.engine.loaders.vox.VOXLoader;
 
 public class DummyGame implements IGameLogic {
@@ -171,6 +168,14 @@ public class DummyGame implements IGameLogic {
             camera.moveRotation(rotVec.x * MOUSE_SENSITIVITY, rotVec.y * MOUSE_SENSITIVITY, 0);
             sceneChanged = true;
         }
+        if (mouseInput.isLeftButtonPressed()) {
+            scene.getBoard().getTiles().forEach(t -> {
+        		t.setSelected(false);
+            	if(t.isHovered()) {
+            		t.setSelected(true);
+            	}
+            });
+        }
 
         scene.setRenderBorder(activeBorder);
         
@@ -190,7 +195,7 @@ public class DummyGame implements IGameLogic {
         // Update view matrix
         camera.updateViewMatrix();
         if(scene.getBoard() != null) {
-	    	boolean selected = mbsd.selectGameItem(scene.getBoard(), window, mouseInput.getCurrentPos(), camera);
+	    	boolean selected = mbsd.hoverGameItem(scene.getBoard(), window, mouseInput.getCurrentPos(), camera);
 	    	hud.setText(selected + "");
         }
     }

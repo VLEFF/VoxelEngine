@@ -166,7 +166,9 @@ public class Renderer {
         gBufferShaderProgram.createMaterialUniform("material");
         gBufferShaderProgram.createUniform("isInstanced");
         gBufferShaderProgram.createUniform("modelNonInstancedMatrix");
+        gBufferShaderProgram.createUniform("hoveredNonInstanced");
         gBufferShaderProgram.createUniform("selectedNonInstanced");
+        gBufferShaderProgram.createUniform("highlightedNonInstanced");
         gBufferShaderProgram.createUniform("jointsMatrix");
         gBufferShaderProgram.createUniform("numCols");
         gBufferShaderProgram.createUniform("numRows");
@@ -544,7 +546,9 @@ public class Renderer {
             }
 
             mesh.renderList(mapMeshes.get(mesh), (GameItem gameItem) -> {
+                gBufferShaderProgram.setUniform("hoveredNonInstanced", gameItem.isHovered() ? 1.0f : 0.0f);
                 gBufferShaderProgram.setUniform("selectedNonInstanced", gameItem.isSelected() ? 1.0f : 0.0f);
+                gBufferShaderProgram.setUniform("highlightedNonInstanced", gameItem.isHighlighted() ? 1.0f : 0.0f);
                 Matrix4f modelMatrix = transformation.buildModelMatrix(gameItem);
                 gBufferShaderProgram.setUniform("modelNonInstancedMatrix", modelMatrix);
                 if (gameItem instanceof AnimGameItem) {

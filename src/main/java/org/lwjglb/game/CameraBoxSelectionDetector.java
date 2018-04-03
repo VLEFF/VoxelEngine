@@ -27,52 +27,52 @@ public class CameraBoxSelectionDetector {
 
     public void selectGameItem(GameItem[] gameItems, Camera camera) {        
         dir = camera.getViewMatrix().positiveZ(dir).negate();
-        selectGameItem(gameItems, camera.getPosition(), dir);
+        hoverGameItem(gameItems, camera.getPosition(), dir);
     }
     
-    protected boolean selectGameItem(GameItem[] gameItems, Vector3f center, Vector3f dir) {
-        boolean selected = false;
-        GameItem selectedGameItem = null;
+    protected boolean hoverGameItem(GameItem[] gameItems, Vector3f center, Vector3f dir) {
+        boolean hovered = false;
+        GameItem hoveredGameItem = null;
         float closestDistance = Float.POSITIVE_INFINITY;
 
         for (GameItem gameItem : gameItems) {
-            gameItem.setSelected(false);
+            gameItem.setHovered(false);
             min.set(gameItem.getPosition());
             max.set(gameItem.getPosition());
             min.add(-gameItem.getScale(), -gameItem.getScale(), -gameItem.getScale());
             max.add(gameItem.getScale(), gameItem.getScale(), gameItem.getScale());
             if (Intersectionf.intersectRayAab(center, dir, min, max, nearFar) && nearFar.x < closestDistance) {
                 closestDistance = nearFar.x;
-                selectedGameItem = gameItem;
+                hoveredGameItem = gameItem;
             }
         }
 
-        if (selectedGameItem != null) {
-            selectedGameItem.setSelected(true);
-            selected = true;
+        if (hoveredGameItem != null) {
+        	hoveredGameItem.setHovered(true);
+        	hovered = true;
         }
-        return selected;
+        return hovered;
     }
     
-    protected boolean selectGameItem(Board board, Vector3f center, Vector3f dir) {
-    	boolean selected = false;
-        Tile selectedTile = null;
+    protected boolean hoverGameItem(Board board, Vector3f center, Vector3f dir) {
+    	boolean hovered = false;
+        Tile hoveredTile = null;
         float closestDistance = Float.POSITIVE_INFINITY;
 
         for (Tile tile : board.getTiles()) {
-        	tile.setSelected(false);
+        	tile.setHovered(false);
             min.set(tile.getX(), tile.getY() - 4, tile.getZ());
             max.set(tile.getX() + board.getTileSize(), tile.getY(), tile.getZ() + board.getTileSize());
             if (Intersectionf.intersectRayAab(center, dir, min, max, nearFar) && nearFar.x < closestDistance) {
                 closestDistance = nearFar.x;
-                selectedTile = tile;
+                hoveredTile = tile;
             }
         }
 
-        if (selectedTile != null) {
-        	selectedTile.setSelected(true);
-            selected = true;
+        if (hoveredTile != null) {
+        	hoveredTile.setHovered(true);
+        	hovered = true;
         }
-        return selected;
+        return hovered;
 	}
 }
