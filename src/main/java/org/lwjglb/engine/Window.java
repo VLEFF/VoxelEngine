@@ -40,6 +40,10 @@ public class Window {
     private final WindowOptions opts;
 
     private final Matrix4f projectionMatrix;
+    
+    private boolean activeBorder;
+    
+    private boolean activeTile;
 
     public Window(String title, int width, int height, boolean vSync, WindowOptions opts) {
         this.title = title;
@@ -99,6 +103,12 @@ public class Window {
         glfwSetKeyCallback(windowHandle, (window, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+            }
+            if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+            	activeBorder = !activeBorder;
+            }
+            if (key == GLFW_KEY_F2 && action == GLFW_PRESS) {
+            	activeTile = !activeTile;
             }
         });
 
@@ -194,6 +204,10 @@ public class Window {
     public boolean isKeyPressed(int keyCode) {
         return glfwGetKey(windowHandle, keyCode) == GLFW_PRESS;
     }
+    
+    public boolean isKeyRelease(int keyCode) {
+        return glfwGetKey(windowHandle, keyCode) == GLFW_RELEASE;
+    }
 
     public boolean windowShouldClose() {
         return glfwWindowShouldClose(windowHandle);
@@ -226,6 +240,14 @@ public class Window {
     public void setvSync(boolean vSync) {
         this.vSync = vSync;
     }
+    
+    public boolean isActiveBorder() {
+		return activeBorder;
+	}
+    
+    public boolean isActiveTile() {
+		return activeTile;
+	}
 
     public void update() {
         glfwSwapBuffers(windowHandle);

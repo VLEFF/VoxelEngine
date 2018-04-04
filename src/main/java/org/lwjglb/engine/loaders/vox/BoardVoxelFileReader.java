@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.AABBf;
 import org.joml.Vector3f;
 import org.lwjglb.engine.graph.Material;
 import org.lwjglb.engine.graph.Mesh;
@@ -34,8 +35,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 								maxHeight = y;
 							}
 							
-							byte color = vox.getMatrice()[x][y][z];
-							float colorCoord = (1.0f + ((1.0f/256.0f) * color) - (1.0f/512.0f)) % 1;
+							float colorCoord = getColorCoord(vox, x, y, z);
 							
 							if(x == vox.getWidth() - 1 || vox.getMatrice()[x + 1][y][z] == null) {
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_RIGHT_FACE);
@@ -77,9 +77,10 @@ class BoardVoxelFileReader extends VoxelFileReader{
 					}
 				}
 				if(z % 8 == 7 || z == vox.getDepth() - 1) {
-					Mesh mesh = createMesh(positions, textCoords, normals, indices);
+					AABBf boundaryBox = new AABBf(0,0,0,8,z,8);
+					Mesh mesh = createMesh(positions, textCoords, normals, indices, boundaryBox);
 					mesh.setMaterial(material);
-					Tile tile = new Tile(mesh, xx, maxHeight + 1, z - 7);
+					Tile tile = new Tile(mesh, board, xx, maxHeight + 1, z - 7);
 					tile.setPosition(xx, 0, z - 7);
 					board.getTiles().add(tile);
 					

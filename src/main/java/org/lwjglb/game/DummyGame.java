@@ -14,12 +14,15 @@ import org.lwjglb.engine.Scene;
 import org.lwjglb.engine.SceneLight;
 import org.lwjglb.engine.Window;
 import org.lwjglb.engine.graph.Camera;
+import org.lwjglb.engine.graph.Mesh;
 import org.lwjglb.engine.graph.Renderer;
 import org.lwjglb.engine.graph.lights.DirectionalLight;
 import org.lwjglb.engine.graph.lights.PointLight;
 import org.lwjglb.engine.items.Board;
 import org.lwjglb.engine.items.GameItem;
+import org.lwjglb.engine.items.Player;
 import org.lwjglb.engine.items.SkyBox;
+import org.lwjglb.engine.loaders.assimp.StaticMeshesLoader;
 import org.lwjglb.engine.loaders.vox.VOXLoader;
 
 public class DummyGame implements IGameLogic {
@@ -48,6 +51,8 @@ public class DummyGame implements IGameLogic {
     
     private boolean activeBorder;
     
+    private boolean activeTile;
+    
     private MouseBoxSelectionDetector mbsd = new MouseBoxSelectionDetector();
 
     public DummyGame() {
@@ -58,6 +63,8 @@ public class DummyGame implements IGameLogic {
         angleInc = 0;
         lightAngle = 90;
         firstTime = true;
+        activeBorder = true;
+        activeTile = false;
     }
 
     @Override
@@ -66,23 +73,18 @@ public class DummyGame implements IGameLogic {
         hud.init(window);
         scene = new Scene();
 
-        //Mesh[] straightRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/monu3.obj", "src/main/resources/models/untitled");
-        /*Mesh[] teaPotMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/deer.obj", "src/main/resources/models/untitled");
-        Mesh[] curvedRoadMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-1.obj", "src/main/resources/models/untitled");
-        Mesh[] planeMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-2.obj", "src/main/resources/models/untitled");
-        Mesh[] oldManMesh = StaticMeshesLoader.load("src/main/resources/models/untitled/untitled-3.obj", "src/main/resources/models/untitled");*/
+        Mesh deerMesh = VOXLoader.loadMesh("src/main/resources/models/untitled/deer.vox");
         
-
         Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/monu3-bis.vox");
         scene.setBoard(board);
 
         List<GameItem> cubes = new ArrayList<>();
         
-        /*GameItem straightRoad = new GameItem(straightRoadMesh);
-        straightRoad.setPosition(0, 0, 0);
-        cubes.add(straightRoad);*/
-        
-        scene.setGameItems(cubes.toArray(new GameItem[cubes.size()]));
+        Player deer = new Player(deerMesh, 2, 16, 10);
+        deer.setPosition(18, 16, 80);
+        deer.setScale(0.5f);
+        deer.setMovementRange(3);
+        scene.setPlayer(deer);
 
         // Shadows
         scene.setRenderShadows(true);
@@ -153,10 +155,10 @@ public class DummyGame implements IGameLogic {
         } else {
             angleInc = 0;
         }
-        if (window.isKeyPressed(GLFW_KEY_C)) {
-        	activeBorder = true;
-        } else if (window.isKeyPressed(GLFW_KEY_V)) {
-        	activeBorder = false;
+        if (window.isKeyPressed(GLFW_KEY_F1)) {
+        	activeBorder = !activeBorder;
+        } else if (window.isKeyPressed(GLFW_KEY_F2)) {
+        	activeTile = !activeTile;
         }
     }
 
@@ -177,8 +179,6 @@ public class DummyGame implements IGameLogic {
             });
         }
 
-        scene.setRenderBorder(activeBorder);
-        
         // Update camera position
         camera.movePosition(cameraInc.x * CAMERA_POS_STEP, cameraInc.y * CAMERA_POS_STEP, cameraInc.z * CAMERA_POS_STEP);
 
@@ -194,9 +194,45 @@ public class DummyGame implements IGameLogic {
 
         // Update view matrix
         camera.updateViewMatrix();
-        if(scene.getBoard() != null) {
-	    	boolean selected = mbsd.hoverGameItem(scene.getBoard(), window, mouseInput.getCurrentPos(), camera);
-	    	hud.setText(selected + "");
+        if(window.isActiveTile()) {
+	        if(scene.getBoard() != null) {
+		    	boolean hoveredGameItem = mbsd.hoverGameItem(new GameItem[] {scene.getPlayer()}, window, mouseInput.getCurrentPos(), camera);
+		    	if(hoveredGameItem) {
+		    		scene.getBoard().getTiles().forEach(t -> {
+		    			t.setHighlighted(false);
+		    			t.setHovered(false);
+		    			int diffX = Math.abs(scene.getPlayer().getX() - (t.getX() / scene.getBoard().getTileSize()));
+		    			int diffY = Math.abs(scene.getPlayer().getY() - t.getY());
+		    			int diffZ = Math.abs(scene.getPlayer().getZ() - (t.getZ() / scene.getBoard().getTileSize()));
+		    			if(diffX + diffZ <= scene.getPlayer().getMovementRange() && diffY <= 4) {
+		    				t.setHighlighted(true);
+		    			}
+		    		});
+		    	} else {
+		    		mbsd.hoverGameItem(scene.getBoard(), window, mouseInput.getCurrentPos(), camera);
+		    	}
+	        }
+	        
+	        hud.getHoveredTiles().clear();
+	        hud.getSelectedTiles().clear();
+	        hud.getHighlightedTiles().clear();
+	        scene.getBoard().getTiles().forEach(t -> {
+	        	if (mouseInput.isLeftButtonPressed()) {
+	        		t.setSelected(false);
+	        		if(t.isHovered()) {
+	            		t.setSelected(true);
+	            	}
+	        	}
+	        	if(t.isHovered()) {
+	        		hud.getHoveredTiles().add(t);
+	        	}
+	        	if(t.isSelected()) {
+	        		hud.getSelectedTiles().add(t);
+	        	}
+	        	if(t.isHighlighted()) {
+	        		hud.getHighlightedTiles().add(t);
+	        	}
+	        });
         }
     }
 

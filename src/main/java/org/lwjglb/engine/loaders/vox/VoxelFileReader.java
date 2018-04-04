@@ -14,6 +14,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.joml.AABBf;
 import org.joml.Vector3f;
 import org.lwjglb.engine.Utils;
 import org.lwjglb.engine.graph.Mesh;
@@ -154,6 +155,11 @@ abstract class VoxelFileReader {
 		return (0xff<<24) | (r<<16) | (g<<8) | b; //pixel
 	}
 	
+	protected float getColorCoord(Vox vox, int x, int y, int z) {
+		byte color = vox.getMatrice()[x][y][z];
+		return (1.0f + ((1.0f/256.0f) * color) - (1.0f/512.0f)) % 1;
+	}
+	
 	protected void addTextCoord(List<Float> textCoords, float colorCoord) {
 		for(int i = 0 ; i < 4 ; i++) {
 			textCoords.add(colorCoord);
@@ -186,12 +192,12 @@ abstract class VoxelFileReader {
 		}
 	}
 	
-	protected Mesh createMesh(List<Float> positions, List<Float> textCoords, List<Float> normals, List<Integer> indices){
+	protected Mesh createMesh(List<Float> positions, List<Float> textCoords, List<Float> normals, List<Integer> indices, AABBf boundaryBox){
 		float[] positionsArray = ArrayUtils.toPrimitive(positions.toArray(new Float[positions.size()]));
 		float[] textCoordsArray = ArrayUtils.toPrimitive(textCoords.toArray(new Float[textCoords.size()]));
 		float[] normalsArray = ArrayUtils.toPrimitive(normals.toArray(new Float[normals.size()]));
 		int[] indicesArray = ArrayUtils.toPrimitive(indices.toArray(new Integer[indices.size()]));
-		return new Mesh(positionsArray, textCoordsArray, normalsArray, indicesArray);
+		return new Mesh(positionsArray, textCoordsArray, normalsArray, indicesArray, boundaryBox);
 	}
 	
 	protected Texture createTexture(Vox vox) {

@@ -28,7 +28,7 @@ public class ShadowRenderer {
 
     public static final int NUM_CASCADES = 3;
 
-    public static final float[] CASCADE_SPLITS = new float[]{Window.Z_FAR / 20.0f, Window.Z_FAR / 10.0f, Window.Z_FAR};
+    public static final float[] CASCADE_SPLITS = new float[]{Window.Z_FAR / 10.0f, Window.Z_FAR / 5.0f, Window.Z_FAR};
 
     private ShaderProgram depthShaderProgram;
 
@@ -125,6 +125,7 @@ public class ShadowRenderer {
 	        for(GameItem tile : scene.getBoard().getTiles()) {
 	        	mapMeshes.put(tile.getMesh(), Arrays.asList(tile));
 	        }
+	        mapMeshes.put(scene.getPlayer().getMesh(), Arrays.asList(scene.getPlayer()));
         }
         for (Mesh mesh : mapMeshes.keySet()) {
             mesh.renderList(mapMeshes.get(mesh), (GameItem gameItem) -> {

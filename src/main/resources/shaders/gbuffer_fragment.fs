@@ -2,6 +2,9 @@
 
 const int NUM_CASCADES = 3;
 
+in float vs_hovered;
+in float vs_selected;
+in float vs_highlighted;
 in vec3  vs_worldpos;
 in vec2  vs_textcoord;
 in vec2  vs_bordercoord;
@@ -9,9 +12,6 @@ in vec3  vs_normal;
 in vec4  vs_mlightviewVertexPos[NUM_CASCADES];
 in mat4  vs_modelMatrix;
 in vec4  vs_mvVertexPos;
-in float vs_hovered;
-in float vs_selected;
-in float vs_highlighted;
 
 layout (location = 0) out vec3 fs_worldpos;
 layout (location = 1) out vec3 fs_diffuse;
@@ -31,10 +31,6 @@ struct Material
 uniform sampler2D texture_sampler;
 uniform sampler2D normalMap;
 uniform sampler2D texture_border;
-uniform sampler2D texture_border_left;
-uniform sampler2D texture_border_top;
-uniform sampler2D texture_border_right;
-uniform sampler2D texture_border_bottom;
 uniform Material  material;
 
 uniform sampler2D shadowMap_0;
@@ -44,64 +40,45 @@ uniform float cascadeFarPlanes[NUM_CASCADES];
 uniform mat4 orthoProjectionMatrix[NUM_CASCADES];
 uniform int renderShadow;
 uniform int renderBorder;
+uniform int renderTile;
 
-vec4 diffuseC;
-vec4 speculrC;
+vec3 diffuseC;
+vec3 speculrC;
 
 void getColour(Material material, vec2 textCoord)
 {
     if (material.hasTexture == 1)
     {
-        diffuseC = texture(texture_sampler, textCoord);
+        diffuseC = texture(texture_sampler, textCoord).xyz;
     	speculrC = diffuseC;
     } 
     else
     {
-        diffuseC = material.diffuse;
-        speculrC = material.specular;
+        diffuseC = material.diffuse.xyz;
+        speculrC = material.specular.xyz;
     }
-    if(renderBorder == 1){
-        if(vs_normal.y != 0) {
-	        if(mod(vs_worldpos.z, 8) > 7.8) {
-		    	diffuseC = vec4(0,0,0,1);
-		        speculrC = vec4(0,0,0,1);
-			}
-			if(mod(vs_worldpos.x, 8) < 0.2) {
-		    	diffuseC = vec4(0,0,0,1);
-		        speculrC = vec4(0,0,0,1);
-			}
-			if(mod(vs_worldpos.z, 8) < 0.2) {
-		    	diffuseC = vec4(0,0,0,1);
-		        speculrC = vec4(0,0,0,1);
-			}
-			if(mod(vs_worldpos.x, 8) > 7.8) {
-		    	diffuseC = vec4(0,0,0,1);
-		        speculrC = vec4(0,0,0,1);
-			}
+    if(renderTile == 1 && vs_normal.y > 0){
+    
+    	if (vs_selected > 0) {
+	        diffuseC = vec3(1, diffuseC.y, diffuseC.z);
+	    } else if (vs_hovered > 0) {
+	        diffuseC = vec3(diffuseC.x, diffuseC.y, 1);
+	    } else if (vs_highlighted > 0) {
+	        diffuseC = vec3(diffuseC.x, 1,diffuseC.z);
+	    }
+	    
+        if(mod(vs_worldpos.z, 8) > 7.8 
+        	|| mod(vs_worldpos.x, 8) < 0.2
+        	|| mod(vs_worldpos.z, 8) < 0.2 
+        	|| mod(vs_worldpos.x, 8) > 7.8 ){
+	    	diffuseC = vec3(0,0,0);
+	        speculrC = vec3(0,0,0);
 		}
-    	
-		diffuseC = diffuseC * texture(texture_border, vs_bordercoord);
-		speculrC = speculrC * texture(texture_border, vs_bordercoord);
-		
-        if(renderBorder == 0){
-	        if(mod(vs_worldpos.z, 8) > 7) {
-		        diffuseC = diffuseC * texture(texture_border_left, vs_bordercoord);
-		        speculrC = speculrC * texture(texture_border_left, vs_bordercoord);
-			}
-			if(mod(vs_worldpos.x, 8) < 1) {
-		        diffuseC = diffuseC * texture(texture_border_top, vs_bordercoord);
-		        speculrC = speculrC * texture(texture_border_top, vs_bordercoord);
-			}
-			if(mod(vs_worldpos.z, 8) < 1) {
-		        diffuseC = diffuseC * texture(texture_border_right, vs_bordercoord);
-		        speculrC = speculrC * texture(texture_border_right, vs_bordercoord);
-			}
-			if(mod(vs_worldpos.x, 8) > 7) {
-		        diffuseC = diffuseC * texture(texture_border_bottom, vs_bordercoord);
-		        speculrC = speculrC * texture(texture_border_bottom, vs_bordercoord);
-			}
-     	}
     }
+	if(renderBorder == 1){
+		diffuseC = diffuseC * texture(texture_border, vs_bordercoord).xyz;
+		speculrC = speculrC * texture(texture_border, vs_bordercoord).xyz;
+	}
 }
 
 vec3 calcNormal(Material material, vec3 normal, vec2 text_coord, mat4 modelMatrix)
@@ -175,11 +152,11 @@ float calcShadow(vec4 position, int idx)
 void main()
 {
     getColour(material, vs_textcoord);
-
+    
     fs_worldpos   = vs_worldpos;
     
-    fs_diffuse    = diffuseC.xyz;
-    fs_specular   = speculrC.xyz;
+    fs_diffuse    = diffuseC;
+    fs_specular   = speculrC;
     fs_normal     = normalize(calcNormal(material, vs_normal, vs_textcoord, vs_modelMatrix));
 
     int idx;
@@ -191,14 +168,6 @@ void main()
             break;
         }
     }
-	fs_shadow  = vec2(calcShadow(vs_mlightviewVertexPos[idx], idx), material.reflectance);
-	
     
-    if ( vs_selected > 0 && vs_normal.y > 0 ) {
-        fs_diffuse = vec3(1, fs_diffuse.y, fs_diffuse.y);
-    } else if ( vs_hovered > 0 && vs_normal.y > 0 ) {
-        fs_diffuse = vec3(fs_diffuse.x, fs_diffuse.y, 1);
-    } else if ( vs_highlighted > 0 && vs_normal.y > 0 ) {
-        fs_diffuse = vec3(fs_diffuse.x, 1,fs_diffuse.z);
-    }
+	fs_shadow  = vec2(calcShadow(vs_mlightviewVertexPos[idx], idx), material.reflectance);
 }

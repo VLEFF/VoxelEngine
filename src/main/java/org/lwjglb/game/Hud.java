@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import org.lwjgl.system.MemoryUtil;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import org.lwjglb.engine.Utils;
 import org.lwjglb.engine.Window;
+import org.lwjglb.engine.items.Tile;
 
 public class Hud {
 
@@ -29,6 +31,13 @@ public class Hud {
     private ByteBuffer fontBuffer;
     
     private String text = "";
+
+    private final List<Tile> hoveredTiles = new ArrayList<>();
+
+    private final List<Tile> selectedTiles = new ArrayList<>();
+
+    private final List<Tile> highlightedTiles = new ArrayList<>();
+
 
     public void init(Window window) throws Exception {
         this.vg = window.getOptions().antialiasing ? nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES) : nvgCreate(NVG_STENCIL_STROKES);
@@ -52,7 +61,21 @@ public class Hud {
         nvgFontFace(vg, FONT_NAME);
         nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
         nvgFillColor(vg, rgba(0x23, 0xa1, 0xf1, 255, colour));
-        nvgText(vg, 50, 50, text);
+        
+        nvgText(vg, 50, 50, "Hovered:");
+        for(int i = 0 ; i < hoveredTiles.size() ; i++) {
+            nvgText(vg, 50, 75 + i * 25, hoveredTiles.get(i).toString());
+        }
+
+        nvgText(vg, 150, 50, "Selected:");
+        for(int i = 0 ; i < selectedTiles.size() ; i++) {
+            nvgText(vg, 150, 75 + i * 25, selectedTiles.get(i).toString());
+        }
+
+        nvgText(vg, 250, 50, "Highlighted");
+        for(int i = 0 ; i < highlightedTiles.size() ; i++) {
+            nvgText(vg, 250, 75 + i * 25, highlightedTiles.get(i).toString());
+        }
 
 
         nvgEndFrame(vg);
@@ -80,5 +103,17 @@ public class Hud {
     
     public void setText(String text) {
 		this.text = text;
+	}
+
+	public List<Tile> getHoveredTiles() {
+		return hoveredTiles;
+	}
+	
+	public List<Tile> getSelectedTiles() {
+		return selectedTiles;
+	}
+	
+	public List<Tile> getHighlightedTiles() {
+		return highlightedTiles;
 	}
 }

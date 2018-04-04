@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.AABBf;
 import org.joml.Vector3f;
 import org.lwjglb.engine.graph.Material;
 import org.lwjglb.engine.graph.Mesh;
@@ -22,8 +23,8 @@ class SimpleVoxelFileReader extends VoxelFileReader{
 			for (int y = 0 ; y < vox.getHeight() ; y++) {
 				for (int z = 0 ; z < vox.getDepth() ; z++) {
 					if(vox.getMatrice()[x][y][z] != null) {		
-						byte color = vox.getMatrice()[x][y][z];
-						float colorCoord = (1.0f + ((1.0f/256.0f) * color) - (1.0f/512.0f)) % 1;
+						
+						float colorCoord = getColorCoord(vox, x, y, z);
 						
 						if(x == vox.getWidth() - 1 || vox.getMatrice()[x + 1][y][z] == null) {
 							addPositions(positions, x, y, z, POSITIONS_RIGHT_FACE);
@@ -66,7 +67,8 @@ class SimpleVoxelFileReader extends VoxelFileReader{
 			}
 		}
 				
-		Mesh mesh = createMesh(positions, textCoords, normals, indices);
+		AABBf boundaryBox = new AABBf(0, 0, 0, vox.getWidth(), vox.getHeight(), vox.getDepth());
+		Mesh mesh = createMesh(positions, textCoords, normals, indices, boundaryBox);
 		mesh.setMaterial(new Material(createTexture(vox)));
 		return mesh;
 	}

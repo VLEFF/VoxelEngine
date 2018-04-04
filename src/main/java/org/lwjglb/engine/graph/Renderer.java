@@ -158,10 +158,6 @@ public class Renderer {
         gBufferShaderProgram.createUniform("projectionMatrix");
         gBufferShaderProgram.createUniform("texture_sampler");
         gBufferShaderProgram.createUniform("texture_border");
-        gBufferShaderProgram.createUniform("texture_border_left");
-        gBufferShaderProgram.createUniform("texture_border_top");
-        gBufferShaderProgram.createUniform("texture_border_right");
-        gBufferShaderProgram.createUniform("texture_border_bottom");
         gBufferShaderProgram.createUniform("normalMap");
         gBufferShaderProgram.createMaterialUniform("material");
         gBufferShaderProgram.createUniform("isInstanced");
@@ -182,6 +178,7 @@ public class Renderer {
         gBufferShaderProgram.createUniform("cascadeFarPlanes", ShadowRenderer.NUM_CASCADES);
         gBufferShaderProgram.createUniform("renderShadow");
         gBufferShaderProgram.createUniform("renderBorder");
+        gBufferShaderProgram.createUniform("renderTile");
     }
 
     private void setupDirLightShader() throws Exception {
@@ -270,10 +267,6 @@ public class Renderer {
         gBufferShaderProgram.setUniform("texture_sampler", 0);
         gBufferShaderProgram.setUniform("normalMap", 1);
         gBufferShaderProgram.setUniform("texture_border", 10);
-        gBufferShaderProgram.setUniform("texture_border_left", 11);
-        gBufferShaderProgram.setUniform("texture_border_top", 12);
-        gBufferShaderProgram.setUniform("texture_border_right", 13);
-        gBufferShaderProgram.setUniform("texture_border_bottom", 14);
 
         List<ShadowCascade> shadowCascades = shadowRenderer.getShadowCascades();
         for (int i = 0; i < ShadowRenderer.NUM_CASCADES; i++) {
@@ -288,7 +281,8 @@ public class Renderer {
             gBufferShaderProgram.setUniform("shadowMap_" + i, start + i);
         }
         gBufferShaderProgram.setUniform("renderShadow", scene.isRenderShadows() ? 1 : 0);
-        gBufferShaderProgram.setUniform("renderBorder", scene.isRenderBorder() ? 1 : 0);
+        gBufferShaderProgram.setUniform("renderBorder", window.isActiveBorder() ? 1 : 0);
+        gBufferShaderProgram.setUniform("renderTile", window.isActiveTile() ? 1 : 0);
 
         renderNonInstancedMeshes(scene);
 
@@ -535,6 +529,7 @@ public class Renderer {
 	        for(GameItem tile : scene.getBoard().getTiles()) {
 	        	mapMeshes.put(tile.getMesh(), Arrays.asList(tile));
 	        }
+	        mapMeshes.put(scene.getPlayer().getMesh(), Arrays.asList(scene.getPlayer()));
         }
         for (Mesh mesh : mapMeshes.keySet()) {
             gBufferShaderProgram.setUniform("material", mesh.getMaterial());

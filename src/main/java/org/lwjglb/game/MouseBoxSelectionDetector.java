@@ -8,6 +8,7 @@ import org.lwjglb.engine.Window;
 import org.lwjglb.engine.graph.Camera;
 import org.lwjglb.engine.items.Board;
 import org.lwjglb.engine.items.GameItem;
+import org.lwjglb.engine.items.Tile;
 
 public class MouseBoxSelectionDetector extends CameraBoxSelectionDetector {
 
@@ -32,7 +33,7 @@ public class MouseBoxSelectionDetector extends CameraBoxSelectionDetector {
         return hoverGameItem(gameItems, camera.getPosition(), mouseDir);
     }
     
-    public boolean hoverGameItem(Board board, Window window, Vector2d mousePos, Camera camera) {
+    public Tile hoverGameItem(Board board, Window window, Vector2d mousePos, Camera camera) {
     	updateMouseDir(window, mousePos, camera);
         return hoverGameItem(board, camera.getPosition(), mouseDir);
     }

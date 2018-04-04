@@ -11,6 +11,8 @@ import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
+
+import org.joml.AABBf;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjglb.engine.items.GameItem;
 
@@ -29,12 +31,22 @@ public class Mesh {
     private Material material;
 
     private float boundingRadius;
-
+    
+    private AABBf boundaryBox;
+    
     public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
-        this(positions, textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0));
+        this(positions, textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0), null);
     }
 
+    public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices, AABBf boundaryBox) {
+        this(positions, textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0), boundaryBox);
+    }
+    
     public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices, int[] jointIndices, float[] weights) {
+    	this(positions, textCoords, normals, indices, jointIndices, weights, null);
+    }
+
+    public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices, int[] jointIndices, float[] weights, AABBf boundaryBox) {
         FloatBuffer posBuffer = null;
         FloatBuffer textCoordsBuffer = null;
         FloatBuffer borderCoordsBuffer = null;
@@ -45,8 +57,10 @@ public class Mesh {
         try {
             calculateBoundingRadius(positions);
             
+            this.boundaryBox = boundaryBox;
+            
             vertexCount = indices.length;
-            vboIdList = new ArrayList();
+            vboIdList = new ArrayList<>();
 
             vaoId = glGenVertexArrays();
             glBindVertexArray(vaoId);
@@ -96,12 +110,8 @@ public class Mesh {
             glBufferData(GL_ARRAY_BUFFER, jointIndicesBuffer, GL_STATIC_DRAW);
             glVertexAttribPointer(4, 4, GL_FLOAT, false, 0, 0);
             
-
-            int mapSize = 40;
-            int squareSize = 8;
             float[] borderCoords = new float[textCoords.length];
             for(int i = 0 ; i < textCoords.length - 8 ; i = i + 8) {
-
             	borderCoords[i] = 0.1f;
             	borderCoords[i+1] = 0.1f;
             	borderCoords[i+2] = 0.1f;
@@ -110,93 +120,6 @@ public class Mesh {
             	borderCoords[i+5] = 0.9f;
             	borderCoords[i+6] = 0.9f;
             	borderCoords[i+7] = 0.1f;
-            	
-            	/*if(isTop(i,mapSize,squareSize)) {
-            		if(isLeft(i,mapSize,squareSize)) {
-                    	borderCoords[i] = 0.05f;
-                    	borderCoords[i+1] = 0.55f;
-                    	borderCoords[i+2] = 0.05f;
-                    	borderCoords[i+3] = 0.95f;
-                    	borderCoords[i+4] = 0.45f;
-                    	borderCoords[i+5] = 0.95f;
-                    	borderCoords[i+6] = 0.45f;
-                    	borderCoords[i+7] = 0.55f;
-            		} else if(isRight(i,mapSize,squareSize)) {
-                    	borderCoords[i] = 0.05f;
-                    	borderCoords[i+1] = 0.95f;
-                    	borderCoords[i+2] = 0.45f;
-                    	borderCoords[i+3] = 0.95f;
-                    	borderCoords[i+4] = 0.45f;
-                    	borderCoords[i+5] = 0.55f;
-                    	borderCoords[i+6] = 0.05f;
-                    	borderCoords[i+7] = 0.55f;
-                	} else {
-                    	borderCoords[i] = 0.55f;
-                    	borderCoords[i+1] = 0.05f;
-                    	borderCoords[i+2] = 0.55f;
-                    	borderCoords[i+3] = 0.45f;
-                    	borderCoords[i+4] = 0.95f;
-                    	borderCoords[i+5] = 0.45f;
-                    	borderCoords[i+6] = 0.95f;
-                    	borderCoords[i+7] = 0.05f;
-            		}
-            	} else if(isBottom(i,mapSize,squareSize)) {
-            		if(isLeft(i,mapSize,squareSize)) {
-                    	borderCoords[i] = 0.45f;
-                    	borderCoords[i+1] = 0.55f;
-                    	borderCoords[i+2] = 0.05f;
-                    	borderCoords[i+3] = 0.55f;
-                    	borderCoords[i+4] = 0.05f;
-                    	borderCoords[i+5] = 0.95f;
-                    	borderCoords[i+6] = 0.45f;
-                    	borderCoords[i+7] = 0.95f;
-            		} else if(isRight(i,mapSize,squareSize)) {
-                    	borderCoords[i] = 0.45f;
-                    	borderCoords[i+1] = 0.95f;
-                    	borderCoords[i+2] = 0.45f;
-                    	borderCoords[i+3] = 0.55f;
-                    	borderCoords[i+4] = 0.05f;
-                    	borderCoords[i+5] = 0.55f;
-                    	borderCoords[i+6] = 0.05f;
-                    	borderCoords[i+7] = 0.95f;
-                	} else {
-                    	borderCoords[i] = 0.95f;
-                    	borderCoords[i+1] = 0.45f;
-                    	borderCoords[i+2] = 0.95f;
-                    	borderCoords[i+3] = 0.05f;
-                    	borderCoords[i+4] = 0.55f;
-                    	borderCoords[i+5] = 0.05f;
-                    	borderCoords[i+6] = 0.55f;
-                    	borderCoords[i+7] = 0.45f;
-                	}
-            	} else if(isLeft(i,mapSize,squareSize)) {
-                	borderCoords[i] = 0.95f;
-                	borderCoords[i+1] = 0.05f;
-                	borderCoords[i+2] = 0.55f;
-                	borderCoords[i+3] = 0.05f;
-                	borderCoords[i+4] = 0.55f;
-                	borderCoords[i+5] = 0.45f;
-                	borderCoords[i+6] = 0.95f;
-                	borderCoords[i+7] = 0.45f;
-            	} else if(isRight(i,mapSize,squareSize)) {
-                	borderCoords[i] = 0.55f;
-                	borderCoords[i+1] = 0.45f;
-                	borderCoords[i+2] = 0.95f;
-                	borderCoords[i+3] = 0.45f;
-                	borderCoords[i+4] = 0.95f;
-                	borderCoords[i+5] = 0.05f;
-                	borderCoords[i+6] = 0.55f;
-                	borderCoords[i+7] = 0.05f;
-            	} else {
-                	borderCoords[i] = 0.05f;
-                	borderCoords[i+1] = 0.05f;
-                	borderCoords[i+2] = 0.05f;
-                	borderCoords[i+3] = 0.45f;
-                	borderCoords[i+4] = 0.45f;
-                	borderCoords[i+5] = 0.45f;
-                	borderCoords[i+6] = 0.45f;
-                	borderCoords[i+7] = 0.05f;
-            	}*/
             }
             vboId = glGenBuffers();
             vboIdList.add(vboId);            
@@ -239,24 +162,7 @@ public class Mesh {
                 MemoryUtil.memFree(indicesBuffer);
             }
         }
-    }
-    
-    private boolean isLeft(int i, int mapSize, int squareSize) {
-    	return (i % (mapSize * TEXTURE_SIZE)) % (TEXTURE_SIZE * squareSize) == TEXTURE_SIZE * (squareSize - 1);
-    }
-    
-    private boolean isRight(int i, int mapSize, int squareSize) {
-    	return (i % (mapSize * TEXTURE_SIZE)) % (TEXTURE_SIZE * squareSize) == 0;
-    }
-    
-    private boolean isTop(int i, int mapSize, int squareSize) {
-    	return i % (mapSize * TEXTURE_SIZE * squareSize) < (mapSize * TEXTURE_SIZE);
-    }
-    
-    private boolean isBottom(int i, int mapSize, int squareSize) {
-    	return i % (mapSize * TEXTURE_SIZE * squareSize) > (mapSize * TEXTURE_SIZE * (squareSize - 1));
-    }
-    
+    }    
     
     private void calculateBoundingRadius(float positions[]) {
         int length = positions.length;
@@ -290,6 +196,14 @@ public class Mesh {
     public void setBoundingRadius(float boundingRadius) {
         this.boundingRadius = boundingRadius;
     }
+    
+    public AABBf getBoundaryBox() {
+		return boundaryBox;
+	}
+    
+    public void setBoundaryBox(AABBf boundaryBox) {
+		this.boundaryBox = boundaryBox;
+	}
 
     protected void initRender() {
         Texture texture = material != null ? material.getTexture() : null;

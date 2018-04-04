@@ -9,7 +9,7 @@ public class GameItem {
     private boolean hovered;
     private boolean selected;
     private boolean highlighted;
-
+    
     private Mesh[] meshes;
 
     private final Vector3f position;
@@ -38,7 +38,7 @@ public class GameItem {
         this();
         this.meshes = new Mesh[]{mesh};
     }
-
+    
     public GameItem(Mesh[] meshes) {
         this();
         this.meshes = meshes;

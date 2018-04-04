@@ -1,5 +1,6 @@
 package org.lwjglb.game;
 
+import org.joml.AABBf;
 import org.joml.Intersectionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -37,13 +38,16 @@ public class CameraBoxSelectionDetector {
 
         for (GameItem gameItem : gameItems) {
             gameItem.setHovered(false);
-            min.set(gameItem.getPosition());
-            max.set(gameItem.getPosition());
-            min.add(-gameItem.getScale(), -gameItem.getScale(), -gameItem.getScale());
-            max.add(gameItem.getScale(), gameItem.getScale(), gameItem.getScale());
-            if (Intersectionf.intersectRayAab(center, dir, min, max, nearFar) && nearFar.x < closestDistance) {
-                closestDistance = nearFar.x;
-                hoveredGameItem = gameItem;
+            AABBf boundaryBox = gameItem.getMesh().getBoundaryBox();
+            if(boundaryBox != null) {
+            	min.set(gameItem.getPosition());
+                max.set(gameItem.getPosition());
+                max.add(boundaryBox.minX * gameItem.getScale(), boundaryBox.minY * gameItem.getScale(), boundaryBox.minZ * gameItem.getScale());
+                max.add(boundaryBox.maxX * gameItem.getScale(), boundaryBox.maxY * gameItem.getScale(), boundaryBox.maxZ * gameItem.getScale());
+                if (Intersectionf.intersectRayAab(center, dir, min, max, nearFar) && nearFar.x < closestDistance) {
+                    closestDistance = nearFar.x;
+                    hoveredGameItem = gameItem;
+                }
             }
         }
 
@@ -54,13 +58,13 @@ public class CameraBoxSelectionDetector {
         return hovered;
     }
     
-    protected boolean hoverGameItem(Board board, Vector3f center, Vector3f dir) {
-    	boolean hovered = false;
+    protected Tile hoverGameItem(Board board, Vector3f center, Vector3f dir) {
         Tile hoveredTile = null;
         float closestDistance = Float.POSITIVE_INFINITY;
 
         for (Tile tile : board.getTiles()) {
         	tile.setHovered(false);
+        	tile.setHighlighted(false);
             min.set(tile.getX(), tile.getY() - 4, tile.getZ());
             max.set(tile.getX() + board.getTileSize(), tile.getY(), tile.getZ() + board.getTileSize());
             if (Intersectionf.intersectRayAab(center, dir, min, max, nearFar) && nearFar.x < closestDistance) {
@@ -71,8 +75,7 @@ public class CameraBoxSelectionDetector {
 
         if (hoveredTile != null) {
         	hoveredTile.setHovered(true);
-        	hovered = true;
         }
-        return hovered;
+        return hoveredTile;
 	}
 }

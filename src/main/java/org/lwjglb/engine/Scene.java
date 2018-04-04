@@ -3,6 +3,8 @@ package org.lwjglb.engine;
 import org.lwjglb.engine.items.SkyBox;
 import org.lwjglb.engine.items.Board;
 import org.lwjglb.engine.items.GameItem;
+import org.lwjglb.engine.items.Player;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +21,8 @@ public class Scene {
     private final Map<InstancedMesh, List<GameItem>> instancedMeshMap;
     
     private Board board;
+    
+    private Player player;
 
     private SkyBox skyBox;
 
@@ -27,8 +31,6 @@ public class Scene {
     private Fog fog;
 
     private boolean renderShadows;
-
-    private boolean renderBorder;
     
     private IParticleEmitter[] particleEmitters;
 
@@ -94,6 +96,14 @@ public class Scene {
     public void setBoard(Board board) {
 		this.board = board;
 	}
+    
+    public Player getPlayer() {
+		return player;
+	}
+    
+    public void setPlayer(Player player) {
+		this.player = player;
+	}
 
     public SkyBox getSkyBox() {
         return skyBox;
@@ -136,12 +146,4 @@ public class Scene {
     public void setParticleEmitters(IParticleEmitter[] particleEmitters) {
         this.particleEmitters = particleEmitters;
     }
-
-    public boolean isRenderBorder() {
-		return renderBorder;
-	}
-    
-    public void setRenderBorder(boolean renderBorder) {
-		this.renderBorder = renderBorder;
-	}
 }
