@@ -111,7 +111,7 @@ public class Mesh {
             glVertexAttribPointer(4, 4, GL_FLOAT, false, 0, 0);
             
             float[] borderCoords = new float[textCoords.length];
-            for(int i = 0 ; i < textCoords.length - 8 ; i = i + 8) {
+            for(int i = 0 ; i <= textCoords.length - 8 ; i = i + 8) {
             	borderCoords[i] = 0.1f;
             	borderCoords[i+1] = 0.1f;
             	borderCoords[i+2] = 0.1f;

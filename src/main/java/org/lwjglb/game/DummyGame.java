@@ -78,7 +78,16 @@ public class DummyGame implements IGameLogic {
         Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/monu3-bis.vox");
         scene.setBoard(board);
 
+        
+
         List<GameItem> cubes = new ArrayList<>();
+        
+        /*Mesh test = VOXLoader.loadMesh("src/main/resources/models/untitled/1x1x1.vox");
+        GameItem item = new GameItem(test);
+        item.setScale(10);
+        item.setPosition(0, 80, 0);
+        cubes.add(item);
+        scene.setGameItems(cubes.toArray(new GameItem[cubes.size()]));*/
         
         Player deer = new Player(deerMesh, 2, 16, 10);
         deer.setPosition(18, 16, 80);
@@ -211,28 +220,28 @@ public class DummyGame implements IGameLogic {
 		    	} else {
 		    		mbsd.hoverGameItem(scene.getBoard(), window, mouseInput.getCurrentPos(), camera);
 		    	}
+		    	
+		    	hud.getHoveredTiles().clear();
+		        hud.getSelectedTiles().clear();
+		        hud.getHighlightedTiles().clear();
+		        scene.getBoard().getTiles().forEach(t -> {
+		        	if (mouseInput.isLeftButtonPressed()) {
+		        		t.setSelected(false);
+		        		if(t.isHovered()) {
+		            		t.setSelected(true);
+		            	}
+		        	}
+		        	if(t.isHovered()) {
+		        		hud.getHoveredTiles().add(t);
+		        	}
+		        	if(t.isSelected()) {
+		        		hud.getSelectedTiles().add(t);
+		        	}
+		        	if(t.isHighlighted()) {
+		        		hud.getHighlightedTiles().add(t);
+		        	}
+		        });
 	        }
-	        
-	        hud.getHoveredTiles().clear();
-	        hud.getSelectedTiles().clear();
-	        hud.getHighlightedTiles().clear();
-	        scene.getBoard().getTiles().forEach(t -> {
-	        	if (mouseInput.isLeftButtonPressed()) {
-	        		t.setSelected(false);
-	        		if(t.isHovered()) {
-	            		t.setSelected(true);
-	            	}
-	        	}
-	        	if(t.isHovered()) {
-	        		hud.getHoveredTiles().add(t);
-	        	}
-	        	if(t.isSelected()) {
-	        		hud.getSelectedTiles().add(t);
-	        	}
-	        	if(t.isHighlighted()) {
-	        		hud.getHighlightedTiles().add(t);
-	        	}
-	        });
         }
     }
 
