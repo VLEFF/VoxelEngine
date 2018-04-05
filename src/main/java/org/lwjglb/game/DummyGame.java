@@ -1,5 +1,6 @@
 package org.lwjglb.game;
 
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -92,14 +93,14 @@ public class DummyGame implements IGameLogic {
         Player deer = new Player(deerMesh, 2, 16, 10);
         deer.setPosition(18, 16, 80);
         deer.setScale(0.5f);
-        deer.setMovementRange(3);
+        deer.setMovementRange(2);
         scene.setPlayer(deer);
 
         // Shadows
         scene.setRenderShadows(true);
 
         float skyBoxScale = 100.0f;
-        SkyBox skyBox = new SkyBox("src/main/resources/models/skybox.obj", new Vector4f(0.65f, 0.65f, 0.65f, 1.0f));
+        SkyBox skyBox = new SkyBox("src/main/resources/models/skybox-cross-left.obj", "src/main/resources/textures/violentDays.jpg");
         skyBox.setScale(skyBoxScale);
         scene.setSkyBox(skyBox);
 
@@ -122,7 +123,7 @@ public class DummyGame implements IGameLogic {
         sceneLight.setSkyBoxLight(new Vector3f(1.0f, 1.0f, 1.0f));
 
         // Directional Light
-        float lightIntensity = 0.5f;
+        float lightIntensity = 0.8f;
         Vector3f lightDirection = new Vector3f(0, 1, 1);
         DirectionalLight directionalLight = new DirectionalLight(new Vector3f(1, 1, 1), lightDirection, lightIntensity);
         sceneLight.setDirectionalLight(directionalLight);
