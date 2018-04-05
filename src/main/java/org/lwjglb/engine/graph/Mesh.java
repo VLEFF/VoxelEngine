@@ -35,19 +35,20 @@ public class Mesh {
     private AABBf boundaryBox;
     
     public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
-        this(positions, textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0), null);
+        this(positions, createEmptyFloatArray(4 * positions.length / 3, 0), textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0), null);
     }
 
-    public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices, AABBf boundaryBox) {
-        this(positions, textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0), boundaryBox);
+    public Mesh(float[] positions, float[] surroundings, float[] textCoords, float[] normals, int[] indices, AABBf boundaryBox) {
+        this(positions, surroundings, textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0), boundaryBox);
     }
     
     public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices, int[] jointIndices, float[] weights) {
-    	this(positions, textCoords, normals, indices, jointIndices, weights, null);
+    	this(positions, createEmptyFloatArray(4 * positions.length / 3, 0), textCoords, normals, indices, jointIndices, weights, null);
     }
 
-    public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices, int[] jointIndices, float[] weights, AABBf boundaryBox) {
+    public Mesh(float[] positions, float[] surroundings, float[] textCoords, float[] normals, int[] indices, int[] jointIndices, float[] weights, AABBf boundaryBox) {
         FloatBuffer posBuffer = null;
+        FloatBuffer surroundingsBuffer = null;
         FloatBuffer textCoordsBuffer = null;
         FloatBuffer borderCoordsBuffer = null;
         FloatBuffer vecNormalsBuffer = null;
@@ -129,6 +130,15 @@ public class Mesh {
             glBufferData(GL_ARRAY_BUFFER, borderCoordsBuffer, GL_STATIC_DRAW);
             glVertexAttribPointer(6, 2, GL_FLOAT, false, 0, 0);
             
+            // Surroundings VBO
+            vboId = glGenBuffers();
+            vboIdList.add(vboId);
+            surroundingsBuffer = MemoryUtil.memAllocFloat(surroundings.length);
+            surroundingsBuffer.put(surroundings).flip();
+            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ARRAY_BUFFER, surroundingsBuffer, GL_STATIC_DRAW);
+            glVertexAttribPointer(7, 4, GL_FLOAT, false, 0, 0);
+            
             // Index VBO
             vboId = glGenBuffers();
             vboIdList.add(vboId);
@@ -142,6 +152,9 @@ public class Mesh {
         } finally {
             if (posBuffer != null) {
                 MemoryUtil.memFree(posBuffer);
+            }
+            if (surroundingsBuffer != null) {
+                MemoryUtil.memFree(surroundingsBuffer);
             }
             if (textCoordsBuffer != null) {
                 MemoryUtil.memFree(textCoordsBuffer);
@@ -264,6 +277,7 @@ public class Mesh {
         glEnableVertexAttribArray(3);
         glEnableVertexAttribArray(4);
         glEnableVertexAttribArray(6);
+        glEnableVertexAttribArray(7);
     }
 
     protected void endRender() {

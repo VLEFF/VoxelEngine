@@ -44,6 +44,8 @@ public class Window {
     private boolean activeBorder;
     
     private boolean activeTile;
+    
+    private boolean activeAmbiantOcclusion;
 
     public Window(String title, int width, int height, boolean vSync, WindowOptions opts) {
         this.title = title;
@@ -109,6 +111,9 @@ public class Window {
             }
             if (key == GLFW_KEY_F2 && action == GLFW_PRESS) {
             	activeTile = !activeTile;
+            }
+            if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
+            	activeAmbiantOcclusion = !activeAmbiantOcclusion;
             }
         });
 
@@ -247,6 +252,10 @@ public class Window {
     
     public boolean isActiveTile() {
 		return activeTile;
+	}
+    
+    public boolean isActiveAmbiantOcclusion() {
+		return activeAmbiantOcclusion;
 	}
 
     public void update() {

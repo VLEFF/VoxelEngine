@@ -12,6 +12,7 @@ in vec3  vs_normal;
 in vec4  vs_mlightviewVertexPos[NUM_CASCADES];
 in mat4  vs_modelMatrix;
 in vec4  vs_mvVertexPos;
+in vec4  vs_surroundings;
 
 layout (location = 0) out vec3 fs_worldpos;
 layout (location = 1) out vec3 fs_diffuse;
@@ -41,9 +42,51 @@ uniform mat4 orthoProjectionMatrix[NUM_CASCADES];
 uniform int renderShadow;
 uniform int renderBorder;
 uniform int renderTile;
+uniform int renderAmbiantOcclusion;
 
 vec3 diffuseC;
 vec3 speculrC;
+
+float getEaseIn(float x){
+	float p = mod(x, 1) - 1;
+	return p*p*p + 1;
+}
+
+vec3 calcFaceAmbiantOcclusion(vec3 diffuseC, float normal, float pos1, float pos2){
+	if(normal > 0) {
+		if(vs_surroundings.x > 0){
+			diffuseC = diffuseC * getEaseIn(pos1);
+		}
+		if(vs_surroundings.y > 0){
+			diffuseC = diffuseC * getEaseIn(pos2);
+		}
+		if(vs_surroundings.z > 0){
+			diffuseC = diffuseC * getEaseIn( 1 - pos1);
+		}
+		if(vs_surroundings.w > 0){
+			diffuseC = diffuseC * getEaseIn( 1 - pos2);
+		}
+	}
+	return diffuseC;
+}
+
+vec3 calcAmbiantOcclusion(vec3 diffuseC, float normal, float pos1, float pos2){
+	if(normal != 0) {
+		if(vs_surroundings.x > 0){
+			diffuseC = diffuseC * getEaseIn(pos1);
+		}
+		if(vs_surroundings.y > 0){
+			diffuseC = diffuseC * getEaseIn(pos2);
+		}
+		if(vs_surroundings.z > 0){
+			diffuseC = diffuseC * getEaseIn( 1 - pos1);
+		}
+		if(vs_surroundings.w > 0){
+			diffuseC = diffuseC * getEaseIn( 1 - pos2);
+		}
+	}
+	return diffuseC;
+}
 
 void getColour(Material material, vec2 textCoord)
 {
@@ -58,7 +101,6 @@ void getColour(Material material, vec2 textCoord)
         speculrC = material.specular.xyz;
     }
     if(renderTile == 1 && vs_normal.y > 0){
-    
     	if (vs_selected > 0) {
 	        diffuseC = vec3(1, diffuseC.y, diffuseC.z);
 	    } else if (vs_hovered > 0) {
@@ -66,15 +108,33 @@ void getColour(Material material, vec2 textCoord)
 	    } else if (vs_highlighted > 0) {
 	        diffuseC = vec3(diffuseC.x, 1,diffuseC.z);
 	    }
-	    
-        if(mod(vs_worldpos.z, 8) > 7.8 
-        	|| mod(vs_worldpos.x, 8) < 0.2
-        	|| mod(vs_worldpos.z, 8) < 0.2 
-        	|| mod(vs_worldpos.x, 8) > 7.8 ){
-	    	diffuseC = vec3(0,0,0);
-	        speculrC = vec3(0,0,0);
+	    float modX = mod(vs_worldpos.x, 8);
+	    float modZ = mod(vs_worldpos.z, 8);
+	    if(modZ > 7.6){
+	    	modZ = 8 - modZ;
+	    	diffuseC = diffuseC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
+	        speculrC = speculrC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
+	    }
+	    if(modX < 0.4){
+	    	diffuseC = diffuseC * vec3(modX * 2.5, modX * 2.5, modX * 2.5);
+	        speculrC = speculrC * vec3(modX * 2.5, modX * 2.5, modX * 2.5);
+	    }
+	    if(modZ < 0.4){
+	    	diffuseC = diffuseC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
+	        speculrC = speculrC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
+	    }
+	    if(modX > 7.6){
+	    	modX = 8 - modX;
+	    	diffuseC = diffuseC * vec3(modX * 2.5, modX * 2.5, modX * 2.5);
+	        speculrC = speculrC * vec3(modX * 2.5, modX * 2.5, modX * 2.5);
 		}
     }
+    
+	if(renderAmbiantOcclusion == 1){
+		diffuseC = calcAmbiantOcclusion(diffuseC, vs_normal.x, vs_worldpos.z, vs_worldpos.y);
+		diffuseC = calcAmbiantOcclusion(diffuseC, vs_normal.y, vs_worldpos.z, vs_worldpos.x);
+		diffuseC = calcAmbiantOcclusion(diffuseC, vs_normal.z, vs_worldpos.x, vs_worldpos.y);
+	}
 	if(renderBorder == 1){
 		diffuseC = diffuseC * texture(texture_border, vs_bordercoord).xyz;
 		speculrC = speculrC * texture(texture_border, vs_bordercoord).xyz;
@@ -168,6 +228,5 @@ void main()
             break;
         }
     }
-    
 	fs_shadow  = vec2(calcShadow(vs_mlightviewVertexPos[idx], idx), material.reflectance);
 }

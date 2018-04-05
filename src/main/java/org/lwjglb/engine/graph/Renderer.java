@@ -179,6 +179,8 @@ public class Renderer {
         gBufferShaderProgram.createUniform("renderShadow");
         gBufferShaderProgram.createUniform("renderBorder");
         gBufferShaderProgram.createUniform("renderTile");
+        gBufferShaderProgram.createUniform("renderAmbiantOcclusion");
+        
     }
 
     private void setupDirLightShader() throws Exception {
@@ -283,6 +285,8 @@ public class Renderer {
         gBufferShaderProgram.setUniform("renderShadow", scene.isRenderShadows() ? 1 : 0);
         gBufferShaderProgram.setUniform("renderBorder", window.isActiveBorder() ? 1 : 0);
         gBufferShaderProgram.setUniform("renderTile", window.isActiveTile() ? 1 : 0);
+        gBufferShaderProgram.setUniform("renderAmbiantOcclusion", window.isActiveAmbiantOcclusion() ? 1 : 0);
+        
 
         renderNonInstancedMeshes(scene);
 

@@ -14,6 +14,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.joml.AABBf;
 import org.joml.Vector3f;
 import org.lwjglb.engine.Utils;
@@ -184,6 +185,37 @@ abstract class VoxelFileReader {
 		}
 	}
 	
+	protected void addSurroundings(List<Float> surroundings, Vox vox, int x, int y, int z, Vector3f normal) {
+		boolean inBoundary = isInBoundary(vox, x, y, z, normal);
+		for(int i = 0 ; i < 4 ; i++) {
+			if(normal.x != 0) {
+				surroundings.add(inBoundary && z > 0 && vox.getMatrice()[x + (int) normal.x][y][z - 1] != null ? 1f : 0f);
+				surroundings.add(inBoundary && y > 0 && vox.getMatrice()[x + (int) normal.x][y - 1][z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && z < vox.getDepth() - 1 && vox.getMatrice()[x + (int) normal.x][y][z + 1] != null ? 1f : 0f);
+				surroundings.add(inBoundary && y < vox.getHeight() - 1 && vox.getMatrice()[x + (int) normal.x][y + 1][z] != null ? 1f : 0f);
+			} else if(normal.y != 0) {
+				surroundings.add(inBoundary && z > 0 && vox.getMatrice()[x][y + (int) normal.y][z - 1] != null ? 1f : 0f);
+				surroundings.add(inBoundary && x > 0 && vox.getMatrice()[x - 1][y + (int) normal.y][z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && z < vox.getDepth() - 1 && vox.getMatrice()[x][y + (int) normal.y][z + 1] != null ? 1f : 0f);
+				surroundings.add(inBoundary && x < vox.getWidth() - 1 && vox.getMatrice()[x + 1][y + (int) normal.y][z] != null ? 1f : 0f);
+			} else if(normal.z != 0) {
+				surroundings.add(inBoundary && x > 0 && vox.getMatrice()[x - 1][y][z + (int) normal.z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && y > 0 && vox.getMatrice()[x][y - 1][z + (int) normal.z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && x < vox.getWidth() - 1 && vox.getMatrice()[x + 1][y][z + (int) normal.z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && y < vox.getHeight() - 1 && vox.getMatrice()[x][y + 1][z + (int) normal.z] != null ? 1f : 0f);
+			}
+		}
+	}
+	
+	private boolean isInBoundary(Vox vox, int x, int y, int z, Vector3f normal) {
+		return x + normal.x < vox.getWidth() 
+				&& x + normal.x >= 0 
+				&& y + normal.y < vox.getHeight()
+				&& y + normal.y >= 0 
+				&& z + normal.z < vox.getDepth()
+				&& z + normal.z >= 0;
+	}
+	
 	protected void addPositions(List<Float> positions, int x, int y, int z, float[][] positionsFace){
 		for(int i = 0 ; i < 4 ; i++) {
 			positions.add(positionsFace[i][0] + x);
@@ -192,12 +224,13 @@ abstract class VoxelFileReader {
 		}
 	}
 	
-	protected Mesh createMesh(List<Float> positions, List<Float> textCoords, List<Float> normals, List<Integer> indices, AABBf boundaryBox){
+	protected Mesh createMesh(List<Float> positions, List<Float> surroundings, List<Float> textCoords, List<Float> normals, List<Integer> indices, AABBf boundaryBox){
 		float[] positionsArray = ArrayUtils.toPrimitive(positions.toArray(new Float[positions.size()]));
+		float[] surroundingsArray = ArrayUtils.toPrimitive(surroundings.toArray(new Float[surroundings.size()]));
 		float[] textCoordsArray = ArrayUtils.toPrimitive(textCoords.toArray(new Float[textCoords.size()]));
 		float[] normalsArray = ArrayUtils.toPrimitive(normals.toArray(new Float[normals.size()]));
 		int[] indicesArray = ArrayUtils.toPrimitive(indices.toArray(new Integer[indices.size()]));
-		return new Mesh(positionsArray, textCoordsArray, normalsArray, indicesArray, boundaryBox);
+		return new Mesh(positionsArray, surroundingsArray, textCoordsArray, normalsArray, indicesArray, boundaryBox);
 	}
 	
 	protected Texture createTexture(Vox vox) {

@@ -19,6 +19,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 		Board board = new Board(vox.getWidth(), vox.getHeight(), vox.getDepth(), 8);
 		Material material = new Material(createTexture(vox));
 		List<Float> positions = new ArrayList<Float>();
+		List<Float> surroundings = new ArrayList<Float>();
 		List<Float> textCoords = new ArrayList<Float>();
 		List<Float> normals = new ArrayList<Float>();
 		List<Integer> indices = new ArrayList<Integer>();
@@ -38,38 +39,50 @@ class BoardVoxelFileReader extends VoxelFileReader{
 							float colorCoord = getColorCoord(vox, x, y, z);
 							
 							if(x == vox.getWidth() - 1 || vox.getMatrice()[x + 1][y][z] == null) {
+								Vector3f normal = new Vector3f(1,0,0);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_RIGHT_FACE);
-								addNormals(normals, new Vector3f(1,0,0));
+								addSurroundings(surroundings, vox, x, y, z, normal);
+								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
 							}
 							if(x == 0 || vox.getMatrice()[x - 1][y][z] == null) {
+								Vector3f normal = new Vector3f(-1,0,0);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_LEFT_FACE);
-								addNormals(normals, new Vector3f(-1,0,0));
+								addSurroundings(surroundings, vox, x, y, z, normal);
+								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
 							}
 							if(y == vox.getHeight() - 1 || vox.getMatrice()[x][y + 1][z] == null) {
+								Vector3f normal = new Vector3f(0,1,0);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_TOP_FACE);
-								addNormals(normals, new Vector3f(0,1,0));
+								addSurroundings(surroundings, vox, x, y, z, normal);
+								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
 							}
 							if(y == 0 || vox.getMatrice()[x][y - 1][z] == null) {
+								Vector3f normal = new Vector3f(0,-1,0);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_BOTTOM_FACE);
-								addNormals(normals, new Vector3f(0,-1,0));
+								addSurroundings(surroundings, vox, x, y, z, normal);
+								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
 							}
 							if(z == vox.getDepth() - 1 || vox.getMatrice()[x][y][z + 1] == null) {
+								Vector3f normal = new Vector3f(0,0,1);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_FRONT_FACE);
-								addNormals(normals, new Vector3f(0,0,1));
+								addSurroundings(surroundings, vox, x, y, z, normal);
+								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
 							}
 							if(z == 0 || vox.getMatrice()[x][y][z - 1] == null) {
+								Vector3f normal = new Vector3f(0,0,-1);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_BACK_FACE);
-								addNormals(normals, new Vector3f(0,0,-1));
+								addSurroundings(surroundings, vox, x, y, z, normal);
+								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
 							}
@@ -78,13 +91,14 @@ class BoardVoxelFileReader extends VoxelFileReader{
 				}
 				if(z % 8 == 7 || z == vox.getDepth() - 1) {
 					AABBf boundaryBox = new AABBf(0,0,0,8,z,8);
-					Mesh mesh = createMesh(positions, textCoords, normals, indices, boundaryBox);
+					Mesh mesh = createMesh(positions, surroundings, textCoords, normals, indices, boundaryBox);
 					mesh.setMaterial(material);
 					Tile tile = new Tile(mesh, board, xx, maxHeight + 1, z - 7);
 					tile.setPosition(xx, 0, z - 7);
 					board.getTiles().add(tile);
 					
 					positions = new ArrayList<Float>();
+					surroundings = new ArrayList<Float>();
 					textCoords = new ArrayList<Float>();
 					normals = new ArrayList<Float>();
 					indices = new ArrayList<Integer>();
