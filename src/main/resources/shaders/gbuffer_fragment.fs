@@ -54,7 +54,6 @@ vec3 speculrC;
 float getEaseIn(float x){
 	float p = mod(x, 1) - 1;
 	return p*p*p + 1;
-	
 }
 
 float getEaseInDiag(float x, float y){
@@ -115,23 +114,23 @@ void getColour(Material material, vec2 textCoord)
 	    }
 	    float modX = mod(vs_worldpos.x, tileSize);
 	    float modZ = mod(vs_worldpos.z, tileSize);
-	    if(modZ > tileSize - 0.4){
+	    if(modZ > tileSize - 1){
 	    	modZ = tileSize - modZ;
-	    	diffuseC = diffuseC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
-	        speculrC = speculrC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
+	    	diffuseC = diffuseC * getEaseIn(modZ);
+	        speculrC = speculrC * getEaseIn(modZ);
 	    }
-	    if(modX < 0.4){
-	    	diffuseC = diffuseC * vec3(modX * 2.5, modX * 2.5, modX * 2.5);
-	        speculrC = speculrC * vec3(modX * 2.5, modX * 2.5, modX * 2.5);
+	    if(modX < 1){
+	    	diffuseC = diffuseC * getEaseIn(modX);
+	        speculrC = speculrC * getEaseIn(modX);
 	    }
-	    if(modZ < 0.4){
-	    	diffuseC = diffuseC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
-	        speculrC = speculrC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
+	    if(modZ < 1){
+	    	diffuseC = diffuseC * getEaseIn(modZ);
+	        speculrC = speculrC * getEaseIn(modZ);
 	    }
-	    if(modX > tileSize - 0.4){
+	    if(modX > tileSize - 1){
 	    	modX = tileSize - modX;
-	    	diffuseC = diffuseC * vec3(modX * 2.5, modX * 2.5, modX * 2.5);
-	        speculrC = speculrC * vec3(modX * 2.5, modX * 2.5, modX * 2.5);
+	    	diffuseC = diffuseC * getEaseIn(modX);
+	        speculrC = speculrC * getEaseIn(modX);
 		}
     }
     
