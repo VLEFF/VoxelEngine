@@ -61,32 +61,30 @@ float getEaseInDiag(float x, float y){
 
 vec3 calcAmbiantOcclusion(vec3 diffuseC, float normal, float pos1, float pos2){
 	if(normal != 0) {
-		if(vs_surroundings != vec4(0,0,0,0)){
-			if(vs_surroundings.x > 0){
-				diffuseC = diffuseC * getEaseIn(pos1);
-			}
-			if(vs_surroundings.y > 0){
-				diffuseC = diffuseC * getEaseIn(pos2);
-			}
-			if(vs_surroundings.z > 0){
-				diffuseC = diffuseC * getEaseIn( 1 - pos1);
-			}
-			if(vs_surroundings.w > 0){
-				diffuseC = diffuseC * getEaseIn( 1 - pos2);
-			}
-		} else {
-			if(vs_surroundingsDiag.x > 0){
-				diffuseC = diffuseC * getEaseInDiag(pos1, pos2);
-			}
-			if(vs_surroundingsDiag.y > 0){
-				diffuseC = diffuseC * getEaseInDiag(pos1, 1 - pos2);
-			}
-			if(vs_surroundingsDiag.z > 0){
-				diffuseC = diffuseC * getEaseInDiag(1 - pos1, 1 - pos2);
-			}
-			if(vs_surroundingsDiag.w > 0){
-				diffuseC = diffuseC * getEaseInDiag(1 - pos1, pos2);
-			}
+		if(vs_surroundings.x > 0){
+			diffuseC = diffuseC * getEaseIn(pos1);
+		}
+		if(vs_surroundings.y > 0){
+			diffuseC = diffuseC * getEaseIn(pos2);
+		}
+		if(vs_surroundings.z > 0){
+			diffuseC = diffuseC * getEaseIn( 1 - pos1);
+		}
+		if(vs_surroundings.w > 0){
+			diffuseC = diffuseC * getEaseIn( 1 - pos2);
+		}
+		
+		if(vs_surroundingsDiag.x > 0 && vs_surroundings.x == 0 && vs_surroundings.y == 0 ){
+			diffuseC = diffuseC * getEaseInDiag(pos1, pos2);
+		}
+		if(vs_surroundingsDiag.y > 0 && vs_surroundings.w == 0 && vs_surroundings.x == 0){
+			diffuseC = diffuseC * getEaseInDiag(pos1, 1 - pos2);
+		}
+		if(vs_surroundingsDiag.z > 0 && vs_surroundings.z == 0 && vs_surroundings.w == 0){
+			diffuseC = diffuseC * getEaseInDiag(1 - pos1, 1 - pos2);
+		}
+		if(vs_surroundingsDiag.w > 0 && vs_surroundings.y == 0 && vs_surroundings.z == 0){
+			diffuseC = diffuseC * getEaseInDiag(1 - pos1, pos2);
 		}
 	}
 	return diffuseC;
