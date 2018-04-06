@@ -40,6 +40,9 @@ uniform sampler2D shadowMap_1;
 uniform sampler2D shadowMap_2;
 uniform float cascadeFarPlanes[NUM_CASCADES];
 uniform mat4 orthoProjectionMatrix[NUM_CASCADES];
+
+uniform int tileSize;
+
 uniform int renderShadow;
 uniform int renderBorder;
 uniform int renderTile;
@@ -110,10 +113,10 @@ void getColour(Material material, vec2 textCoord)
 	    } else if (vs_highlighted > 0) {
 	        diffuseC = vec3(diffuseC.x, 1,diffuseC.z);
 	    }
-	    float modX = mod(vs_worldpos.x, 8);
-	    float modZ = mod(vs_worldpos.z, 8);
-	    if(modZ > 7.6){
-	    	modZ = 8 - modZ;
+	    float modX = mod(vs_worldpos.x, tileSize);
+	    float modZ = mod(vs_worldpos.z, tileSize);
+	    if(modZ > tileSize - 0.4){
+	    	modZ = tileSize - modZ;
 	    	diffuseC = diffuseC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
 	        speculrC = speculrC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
 	    }
@@ -125,8 +128,8 @@ void getColour(Material material, vec2 textCoord)
 	    	diffuseC = diffuseC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
 	        speculrC = speculrC * vec3(modZ * 2.5, modZ * 2.5, modZ * 2.5);
 	    }
-	    if(modX > 7.6){
-	    	modX = 8 - modX;
+	    if(modX > tileSize - 0.4){
+	    	modX = tileSize - modX;
 	    	diffuseC = diffuseC * vec3(modX * 2.5, modX * 2.5, modX * 2.5);
 	        speculrC = speculrC * vec3(modX * 2.5, modX * 2.5, modX * 2.5);
 		}

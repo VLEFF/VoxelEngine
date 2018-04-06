@@ -76,7 +76,7 @@ public class DummyGame implements IGameLogic {
 
         Mesh deerMesh = VOXLoader.loadMesh("src/main/resources/models/untitled/deer.vox");
         
-        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/monu3-bis.vox");
+        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/monu3-bis.vox", 8);
         scene.setBoard(board);
 
         

@@ -11,8 +11,8 @@ public class VOXLoader {
     	return vfr.read(new File(fileName));
     }
     
-    public static Board loadBoard(String fileName) throws Exception {
+    public static Board loadBoard(String fileName, int tileSize) throws Exception {
     	BoardVoxelFileReader vfr = new BoardVoxelFileReader();
-    	return vfr.read(new File(fileName));
+    	return vfr.read(new File(fileName), tileSize);
     }
 }

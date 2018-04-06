@@ -13,10 +13,10 @@ import org.lwjglb.engine.items.Tile;
 
 class BoardVoxelFileReader extends VoxelFileReader{
 
-	public Board read(File file) throws Exception {
+	public Board read(File file, int tileSize) throws Exception {
 
 		Vox vox = readVox(file);
-		Board board = new Board(vox.getWidth(), vox.getHeight(), vox.getDepth(), 8);
+		Board board = new Board(vox.getWidth(), vox.getHeight(), vox.getDepth(), tileSize);
 		Material material = new Material(createTexture(vox));
 		List<Float> positions = new ArrayList<Float>();
 		List<Float> surroundings = new ArrayList<Float>();
@@ -27,9 +27,9 @@ class BoardVoxelFileReader extends VoxelFileReader{
 		
 		int maxHeight = 0;
 		
-		for (int xx = 0 ; xx < vox.getWidth() ; xx = xx + 8) {
+		for (int xx = 0 ; xx < vox.getWidth() ; xx = xx + tileSize) {
 			for (int z = 0 ; z < vox.getDepth() ; z++) {
-				for (int x = xx ; x < xx + 8 ; x++) {
+				for (int x = xx ; x < xx + tileSize ; x++) {
 					for (int y = 0 ; y < vox.getHeight() ; y++) {
 						if(vox.getMatrice()[x][y][z] != null) {	
 							
@@ -41,7 +41,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 							
 							if(x == vox.getWidth() - 1 || vox.getMatrice()[x + 1][y][z] == null) {
 								Vector3f normal = new Vector3f(1,0,0);
-								addPositions(positions, x % 8, y, z % 8, POSITIONS_RIGHT_FACE);
+								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_RIGHT_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
 								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
@@ -50,7 +50,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 							}
 							if(x == 0 || vox.getMatrice()[x - 1][y][z] == null) {
 								Vector3f normal = new Vector3f(-1,0,0);
-								addPositions(positions, x % 8, y, z % 8, POSITIONS_LEFT_FACE);
+								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_LEFT_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
 								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
@@ -59,7 +59,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 							}
 							if(y == vox.getHeight() - 1 || vox.getMatrice()[x][y + 1][z] == null) {
 								Vector3f normal = new Vector3f(0,1,0);
-								addPositions(positions, x % 8, y, z % 8, POSITIONS_TOP_FACE);
+								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_TOP_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
 								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
@@ -68,7 +68,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 							}
 							if(y == 0 || vox.getMatrice()[x][y - 1][z] == null) {
 								Vector3f normal = new Vector3f(0,-1,0);
-								addPositions(positions, x % 8, y, z % 8, POSITIONS_BOTTOM_FACE);
+								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_BOTTOM_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
 								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
@@ -77,7 +77,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 							}
 							if(z == vox.getDepth() - 1 || vox.getMatrice()[x][y][z + 1] == null) {
 								Vector3f normal = new Vector3f(0,0,1);
-								addPositions(positions, x % 8, y, z % 8, POSITIONS_FRONT_FACE);
+								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_FRONT_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
 								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
@@ -86,7 +86,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 							}
 							if(z == 0 || vox.getMatrice()[x][y][z - 1] == null) {
 								Vector3f normal = new Vector3f(0,0,-1);
-								addPositions(positions, x % 8, y, z % 8, POSITIONS_BACK_FACE);
+								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_BACK_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
 								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
@@ -96,12 +96,12 @@ class BoardVoxelFileReader extends VoxelFileReader{
 						}
 					}
 				}
-				if(z % 8 == 7 || z == vox.getDepth() - 1) {
-					AABBf boundaryBox = new AABBf(0,0,0,8,z,8);
+				if(z % tileSize == tileSize - 1 || z == vox.getDepth() - 1) {
+					AABBf boundaryBox = new AABBf(0,0,0,tileSize,z,tileSize);
 					Mesh mesh = createMesh(positions, surroundings, surroundingsDiag, textCoords, normals, indices, boundaryBox);
 					mesh.setMaterial(material);
-					Tile tile = new Tile(mesh, board, xx, maxHeight + 1, z - 7);
-					tile.setPosition(xx, 0, z - 7);
+					Tile tile = new Tile(mesh, board, xx, maxHeight + 1, z - (tileSize - 1));
+					tile.setPosition(xx, 0, z - (tileSize - 1));
 					board.getTiles().add(tile);
 					
 					positions = new ArrayList<Float>();

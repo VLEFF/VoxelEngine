@@ -176,6 +176,9 @@ public class Renderer {
         gBufferShaderProgram.createUniform("orthoProjectionMatrix", ShadowRenderer.NUM_CASCADES);
         gBufferShaderProgram.createUniform("lightViewMatrix", ShadowRenderer.NUM_CASCADES);
         gBufferShaderProgram.createUniform("cascadeFarPlanes", ShadowRenderer.NUM_CASCADES);
+        
+        gBufferShaderProgram.createUniform("tileSize");
+        
         gBufferShaderProgram.createUniform("renderShadow");
         gBufferShaderProgram.createUniform("renderBorder");
         gBufferShaderProgram.createUniform("renderTile");
@@ -282,6 +285,9 @@ public class Renderer {
         for (int i = 0; i < ShadowRenderer.NUM_CASCADES; i++) {
             gBufferShaderProgram.setUniform("shadowMap_" + i, start + i);
         }
+        
+        gBufferShaderProgram.setUniform("tileSize", scene.getBoard() != null ? scene.getBoard().getTileSize() : 0);
+        
         gBufferShaderProgram.setUniform("renderShadow", scene.isRenderShadows() ? 1 : 0);
         gBufferShaderProgram.setUniform("renderBorder", window.isActiveBorder() ? 1 : 0);
         gBufferShaderProgram.setUniform("renderTile", window.isActiveTile() ? 1 : 0);
