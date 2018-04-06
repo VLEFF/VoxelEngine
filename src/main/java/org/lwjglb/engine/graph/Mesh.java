@@ -35,20 +35,21 @@ public class Mesh {
     private AABBf boundaryBox;
     
     public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
-        this(positions, createEmptyFloatArray(4 * positions.length / 3, 0), textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0), null);
+        this(positions, createEmptyFloatArray(4 * positions.length / 3, 0), createEmptyFloatArray(4 * positions.length / 3, 0), textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0), null);
     }
 
-    public Mesh(float[] positions, float[] surroundings, float[] textCoords, float[] normals, int[] indices, AABBf boundaryBox) {
-        this(positions, surroundings, textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0), boundaryBox);
+    public Mesh(float[] positions, float[] surroundings, float[] surroundingsDiag, float[] textCoords, float[] normals, int[] indices, AABBf boundaryBox) {
+        this(positions, surroundings, surroundingsDiag, textCoords, normals, indices, createEmptyIntArray(MAX_WEIGHTS * positions.length / 3, 0), createEmptyFloatArray(MAX_WEIGHTS * positions.length / 3, 0), boundaryBox);
     }
     
     public Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices, int[] jointIndices, float[] weights) {
-    	this(positions, createEmptyFloatArray(4 * positions.length / 3, 0), textCoords, normals, indices, jointIndices, weights, null);
+    	this(positions, createEmptyFloatArray(4 * positions.length / 3, 0), createEmptyFloatArray(4 * positions.length / 3, 0), textCoords, normals, indices, jointIndices, weights, null);
     }
 
-    public Mesh(float[] positions, float[] surroundings, float[] textCoords, float[] normals, int[] indices, int[] jointIndices, float[] weights, AABBf boundaryBox) {
+    public Mesh(float[] positions, float[] surroundings, float[] surroundingsDiag, float[] textCoords, float[] normals, int[] indices, int[] jointIndices, float[] weights, AABBf boundaryBox) {
         FloatBuffer posBuffer = null;
         FloatBuffer surroundingsBuffer = null;
+        FloatBuffer surroundingsDiagBuffer = null;
         FloatBuffer textCoordsBuffer = null;
         FloatBuffer borderCoordsBuffer = null;
         FloatBuffer vecNormalsBuffer = null;
@@ -138,6 +139,15 @@ public class Mesh {
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
             glBufferData(GL_ARRAY_BUFFER, surroundingsBuffer, GL_STATIC_DRAW);
             glVertexAttribPointer(7, 4, GL_FLOAT, false, 0, 0);
+
+            // Surroundings Diag VBO
+            vboId = glGenBuffers();
+            vboIdList.add(vboId);
+            surroundingsDiagBuffer = MemoryUtil.memAllocFloat(surroundingsDiag.length);
+            surroundingsDiagBuffer.put(surroundingsDiag).flip();
+            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ARRAY_BUFFER, surroundingsDiagBuffer, GL_STATIC_DRAW);
+            glVertexAttribPointer(15, 4, GL_FLOAT, false, 0, 0);
             
             // Index VBO
             vboId = glGenBuffers();
@@ -155,6 +165,9 @@ public class Mesh {
             }
             if (surroundingsBuffer != null) {
                 MemoryUtil.memFree(surroundingsBuffer);
+            }
+            if (surroundingsDiagBuffer != null) {
+                MemoryUtil.memFree(surroundingsDiagBuffer);
             }
             if (textCoordsBuffer != null) {
                 MemoryUtil.memFree(textCoordsBuffer);
@@ -278,6 +291,7 @@ public class Mesh {
         glEnableVertexAttribArray(4);
         glEnableVertexAttribArray(6);
         glEnableVertexAttribArray(7);
+        glEnableVertexAttribArray(15);
     }
 
     protected void endRender() {
@@ -288,6 +302,8 @@ public class Mesh {
         glDisableVertexAttribArray(3);
         glDisableVertexAttribArray(4);
         glDisableVertexAttribArray(6);
+        glDisableVertexAttribArray(7);
+        glDisableVertexAttribArray(15);
         glBindVertexArray(0);
 
         glBindTexture(GL_TEXTURE_2D, 0);

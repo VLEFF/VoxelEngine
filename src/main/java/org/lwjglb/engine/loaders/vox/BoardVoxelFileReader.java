@@ -20,6 +20,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 		Material material = new Material(createTexture(vox));
 		List<Float> positions = new ArrayList<Float>();
 		List<Float> surroundings = new ArrayList<Float>();
+		List<Float> surroundingsDiag = new ArrayList<Float>();
 		List<Float> textCoords = new ArrayList<Float>();
 		List<Float> normals = new ArrayList<Float>();
 		List<Integer> indices = new ArrayList<Integer>();
@@ -42,6 +43,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 								Vector3f normal = new Vector3f(1,0,0);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_RIGHT_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
+								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
@@ -50,6 +52,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 								Vector3f normal = new Vector3f(-1,0,0);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_LEFT_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
+								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
@@ -58,6 +61,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 								Vector3f normal = new Vector3f(0,1,0);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_TOP_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
+								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
@@ -66,6 +70,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 								Vector3f normal = new Vector3f(0,-1,0);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_BOTTOM_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
+								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
@@ -74,6 +79,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 								Vector3f normal = new Vector3f(0,0,1);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_FRONT_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
+								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
@@ -82,6 +88,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 								Vector3f normal = new Vector3f(0,0,-1);
 								addPositions(positions, x % 8, y, z % 8, POSITIONS_BACK_FACE);
 								addSurroundings(surroundings, vox, x, y, z, normal);
+								addSurroundingsDiag(surroundingsDiag, vox, x, y, z, normal);
 								addNormals(normals, normal);
 								addIndices(indices);
 								addTextCoord(textCoords, colorCoord);
@@ -91,7 +98,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 				}
 				if(z % 8 == 7 || z == vox.getDepth() - 1) {
 					AABBf boundaryBox = new AABBf(0,0,0,8,z,8);
-					Mesh mesh = createMesh(positions, surroundings, textCoords, normals, indices, boundaryBox);
+					Mesh mesh = createMesh(positions, surroundings, surroundingsDiag, textCoords, normals, indices, boundaryBox);
 					mesh.setMaterial(material);
 					Tile tile = new Tile(mesh, board, xx, maxHeight + 1, z - 7);
 					tile.setPosition(xx, 0, z - 7);
@@ -99,6 +106,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 					
 					positions = new ArrayList<Float>();
 					surroundings = new ArrayList<Float>();
+					surroundingsDiag = new ArrayList<Float>();
 					textCoords = new ArrayList<Float>();
 					normals = new ArrayList<Float>();
 					indices = new ArrayList<Integer>();

@@ -12,6 +12,7 @@ layout (location=4) in ivec4 jointIndices;
 layout (location=5) in mat4 modelInstancedMatrix;
 layout (location=6) in vec2 borderCoord;
 layout (location=7) in vec4 surroundings;
+layout (location=15) in vec4 surroundingsDiag;
 layout (location=9) in vec2 texOffset;
 layout (location=10) in float hoveredInstanced;
 layout (location=11) in float selectedInstanced;
@@ -38,6 +39,7 @@ out vec4  vs_mlightviewVertexPos[NUM_CASCADES];
 out mat4  vs_modelMatrix;
 out vec4  vs_mvVertexPos;
 out vec4  vs_surroundings;
+out vec4  vs_surroundingsDiag;
 out float vs_hovered;
 out float vs_selected;
 out float vs_highlighted;
@@ -94,6 +96,7 @@ void main()
     vs_textcoord = vec2(x, y);
     vs_bordercoord = borderCoord;
     vs_surroundings = surroundings;
+    vs_surroundingsDiag = surroundingsDiag;
     vs_worldpos = (modelMatrix * initPos).xyz;
     vs_normal = normalize(modelMatrix * initNormal).xyz;
 

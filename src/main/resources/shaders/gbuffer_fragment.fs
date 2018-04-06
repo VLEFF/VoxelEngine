@@ -13,6 +13,7 @@ in vec4  vs_mlightviewVertexPos[NUM_CASCADES];
 in mat4  vs_modelMatrix;
 in vec4  vs_mvVertexPos;
 in vec4  vs_surroundings;
+in vec4  vs_surroundingsDiag;
 
 layout (location = 0) out vec3 fs_worldpos;
 layout (location = 1) out vec3 fs_diffuse;
@@ -50,39 +51,42 @@ vec3 speculrC;
 float getEaseIn(float x){
 	float p = mod(x, 1) - 1;
 	return p*p*p + 1;
+	
 }
 
-vec3 calcFaceAmbiantOcclusion(vec3 diffuseC, float normal, float pos1, float pos2){
-	if(normal > 0) {
-		if(vs_surroundings.x > 0){
-			diffuseC = diffuseC * getEaseIn(pos1);
-		}
-		if(vs_surroundings.y > 0){
-			diffuseC = diffuseC * getEaseIn(pos2);
-		}
-		if(vs_surroundings.z > 0){
-			diffuseC = diffuseC * getEaseIn( 1 - pos1);
-		}
-		if(vs_surroundings.w > 0){
-			diffuseC = diffuseC * getEaseIn( 1 - pos2);
-		}
-	}
-	return diffuseC;
+float getEaseInDiag(float x, float y){
+	float p = mod(x, 1) + mod(y, 1);
+	return p >= 1 ? 1 : getEaseIn(p);
 }
 
 vec3 calcAmbiantOcclusion(vec3 diffuseC, float normal, float pos1, float pos2){
 	if(normal != 0) {
-		if(vs_surroundings.x > 0){
-			diffuseC = diffuseC * getEaseIn(pos1);
-		}
-		if(vs_surroundings.y > 0){
-			diffuseC = diffuseC * getEaseIn(pos2);
-		}
-		if(vs_surroundings.z > 0){
-			diffuseC = diffuseC * getEaseIn( 1 - pos1);
-		}
-		if(vs_surroundings.w > 0){
-			diffuseC = diffuseC * getEaseIn( 1 - pos2);
+		if(vs_surroundings != vec4(0,0,0,0)){
+			if(vs_surroundings.x > 0){
+				diffuseC = diffuseC * getEaseIn(pos1);
+			}
+			if(vs_surroundings.y > 0){
+				diffuseC = diffuseC * getEaseIn(pos2);
+			}
+			if(vs_surroundings.z > 0){
+				diffuseC = diffuseC * getEaseIn( 1 - pos1);
+			}
+			if(vs_surroundings.w > 0){
+				diffuseC = diffuseC * getEaseIn( 1 - pos2);
+			}
+		} else {
+			if(vs_surroundingsDiag.x > 0){
+				diffuseC = diffuseC * getEaseInDiag(pos1, pos2);
+			}
+			if(vs_surroundingsDiag.y > 0){
+				diffuseC = diffuseC * getEaseInDiag(pos1, 1 - pos2);
+			}
+			if(vs_surroundingsDiag.z > 0){
+				diffuseC = diffuseC * getEaseInDiag(1 - pos1, 1 - pos2);
+			}
+			if(vs_surroundingsDiag.w > 0){
+				diffuseC = diffuseC * getEaseInDiag(1 - pos1, pos2);
+			}
 		}
 	}
 	return diffuseC;
@@ -131,8 +135,8 @@ void getColour(Material material, vec2 textCoord)
     }
     
 	if(renderAmbiantOcclusion == 1){
-		diffuseC = calcAmbiantOcclusion(diffuseC, vs_normal.x, vs_worldpos.z, vs_worldpos.y);
-		diffuseC = calcAmbiantOcclusion(diffuseC, vs_normal.y, vs_worldpos.z, vs_worldpos.x);
+		diffuseC = calcAmbiantOcclusion(diffuseC, vs_normal.x, vs_worldpos.y, vs_worldpos.z);
+		diffuseC = calcAmbiantOcclusion(diffuseC, vs_normal.y, vs_worldpos.x, vs_worldpos.z);
 		diffuseC = calcAmbiantOcclusion(diffuseC, vs_normal.z, vs_worldpos.x, vs_worldpos.y);
 	}
 	if(renderBorder == 1){
