@@ -52,8 +52,7 @@ vec3 diffuseC;
 vec3 speculrC;
 
 float getEaseIn(float x){
-	float p = mod(x, 1) - 1;
-	return p*p*p + 1;
+	return 0.2 + (0.8 * (1 - exp(-4 * mod(x, 1))));
 }
 
 float getEaseInDiag(float x, float y){
