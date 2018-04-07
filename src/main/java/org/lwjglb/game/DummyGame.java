@@ -76,7 +76,7 @@ public class DummyGame implements IGameLogic {
 
         Mesh deerMesh = VOXLoader.loadMesh("src/main/resources/models/untitled/deer.vox");
         
-        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/monu3-bis.vox", 8);
+        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/monu3-bis.vox", 4);
         scene.setBoard(board);
 
         
@@ -90,9 +90,9 @@ public class DummyGame implements IGameLogic {
         cubes.add(item);
         scene.setGameItems(cubes.toArray(new GameItem[cubes.size()]));*/
         
-        Player deer = new Player(deerMesh, 2, 16, 10);
-        deer.setPosition(18, 16, 80);
-        deer.setScale(0.5f);
+        Player deer = new Player(deerMesh, 4, 16, 19);
+        deer.setPosition(17, 16, 76);
+        deer.setScale(0.25f);
         deer.setMovementRange(2);
         scene.setPlayer(deer);
 
