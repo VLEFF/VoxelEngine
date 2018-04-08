@@ -211,9 +211,9 @@ public class DummyGame implements IGameLogic {
 		    		scene.getBoard().getTiles().forEach(t -> {
 		    			t.setHighlighted(false);
 		    			t.setHovered(false);
-		    			int diffX = Math.abs(scene.getPlayer().getX() - (t.getX() / scene.getBoard().getTileSize()));
+		    			int diffX = Math.abs(scene.getPlayer().getX() - t.getX());
 		    			int diffY = Math.abs(scene.getPlayer().getY() - t.getY());
-		    			int diffZ = Math.abs(scene.getPlayer().getZ() - (t.getZ() / scene.getBoard().getTileSize()));
+		    			int diffZ = Math.abs(scene.getPlayer().getZ() - t.getZ());
 		    			if(diffX + diffZ <= scene.getPlayer().getMovementRange() && diffY <= 4) {
 		    				t.setHighlighted(true);
 		    			}
@@ -222,6 +222,8 @@ public class DummyGame implements IGameLogic {
 		    		mbsd.hoverGameItem(scene.getBoard(), window, mouseInput.getCurrentPos(), camera);
 		    	}
 		    	
+		    	hud.setFrustrumMax(scene.getBoard().getTiles().size());
+		    	hud.setFrustrumShown(scene.getBoard().getTiles().stream().filter(t -> t.isInsideFrustum()).count());
 		    	hud.getHoveredTiles().clear();
 		        hud.getSelectedTiles().clear();
 		        hud.getHighlightedTiles().clear();

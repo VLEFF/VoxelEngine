@@ -21,6 +21,7 @@ import org.lwjglb.engine.MouseInput;
 import org.lwjglb.engine.Scene;
 import org.lwjglb.engine.SceneLight;
 import org.lwjglb.engine.items.SkyBox;
+import org.lwjglb.engine.items.Tile;
 import org.lwjglb.engine.Utils;
 import org.lwjglb.engine.Window;
 import org.lwjglb.engine.graph.anim.AnimGameItem;
@@ -90,7 +91,14 @@ public class Renderer {
 
         if (window.getOptions().frustumCulling) {
             frustumFilter.updateFrustum(window.getProjectionMatrix(), camera.getViewMatrix());
-            frustumFilter.filter(scene.getGameMeshes());
+            Map<Mesh, List<GameItem>> mapMeshes = new HashMap<>(scene.getGameMeshes());
+            if(scene.getBoard() != null) {
+    	        for(GameItem tile : scene.getBoard().getTiles()) {
+    	        	mapMeshes.put(tile.getMesh(), Arrays.asList(tile));
+    	        }
+    	        mapMeshes.put(scene.getPlayer().getMesh(), Arrays.asList(scene.getPlayer()));
+            }
+            frustumFilter.filter(mapMeshes);
             frustumFilter.filter(scene.getGameInstancedMeshes());
         }
 

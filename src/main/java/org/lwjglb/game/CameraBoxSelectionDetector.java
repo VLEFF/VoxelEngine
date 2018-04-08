@@ -42,7 +42,7 @@ public class CameraBoxSelectionDetector {
             if(boundaryBox != null) {
             	min.set(gameItem.getPosition());
                 max.set(gameItem.getPosition());
-                max.add(boundaryBox.minX * gameItem.getScale(), boundaryBox.minY * gameItem.getScale(), boundaryBox.minZ * gameItem.getScale());
+                min.add(boundaryBox.minX * gameItem.getScale(), boundaryBox.minY * gameItem.getScale(), boundaryBox.minZ * gameItem.getScale());
                 max.add(boundaryBox.maxX * gameItem.getScale(), boundaryBox.maxY * gameItem.getScale(), boundaryBox.maxZ * gameItem.getScale());
                 if (Intersectionf.intersectRayAab(center, dir, min, max, nearFar) && nearFar.x < closestDistance) {
                     closestDistance = nearFar.x;
@@ -65,8 +65,9 @@ public class CameraBoxSelectionDetector {
         for (Tile tile : board.getTiles()) {
         	tile.setHovered(false);
         	tile.setHighlighted(false);
-            min.set(tile.getX(), tile.getY() - 4, tile.getZ());
-            max.set(tile.getX() + board.getTileSize(), tile.getY(), tile.getZ() + board.getTileSize());
+        	Vector3f tilePosition = tile.getPosition();
+            min.set(tile.getX() * board.getTileSize(), tile.getY() - 4, tile.getZ() * board.getTileSize());
+            max.set((tile.getX() * board.getTileSize()) + board.getTileSize(), tile.getY(), (tile.getZ() * board.getTileSize()) + board.getTileSize());
             if (Intersectionf.intersectRayAab(center, dir, min, max, nearFar) && nearFar.x < closestDistance) {
                 closestDistance = nearFar.x;
                 hoveredTile = tile;

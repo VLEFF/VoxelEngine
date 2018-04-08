@@ -31,6 +31,9 @@ public class Hud {
     private ByteBuffer fontBuffer;
     
     private String text = "";
+    
+    private long frustrumShown;
+    private long frustrumMax;
 
     private final List<Tile> hoveredTiles = new ArrayList<>();
 
@@ -61,7 +64,7 @@ public class Hud {
         nvgFontFace(vg, FONT_NAME);
         nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
         nvgFillColor(vg, rgba(0x23, 0xa1, 0xf1, 255, colour));
-        
+        nvgText(vg, 50, 25, "Fustrum culling: " + frustrumShown + "/" + frustrumMax + " item shown");
         nvgText(vg, 50, 50, "Hovered:");
         for(int i = 0 ; i < hoveredTiles.size() ; i++) {
             nvgText(vg, 50, 75 + i * 25, hoveredTiles.get(i).toString());
@@ -103,6 +106,22 @@ public class Hud {
     
     public void setText(String text) {
 		this.text = text;
+	}    
+
+	public long getFrustrumShown() {
+		return frustrumShown;
+	}
+
+	public void setFrustrumShown(long frustrumShown) {
+		this.frustrumShown = frustrumShown;
+	}
+
+	public long getFrustrumMax() {
+		return frustrumMax;
+	}
+
+	public void setFrustrumMax(long l) {
+		this.frustrumMax = l;
 	}
 
 	public List<Tile> getHoveredTiles() {

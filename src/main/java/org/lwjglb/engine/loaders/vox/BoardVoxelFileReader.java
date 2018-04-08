@@ -97,10 +97,10 @@ class BoardVoxelFileReader extends VoxelFileReader{
 					}
 				}
 				if(z % tileSize == tileSize - 1 || z == vox.getDepth() - 1) {
-					AABBf boundaryBox = new AABBf(0,0,0,tileSize,z,tileSize);
+					AABBf boundaryBox = new AABBf(0,0,0,tileSize,maxHeight + 1,tileSize);
 					Mesh mesh = createMesh(positions, surroundings, surroundingsDiag, textCoords, normals, indices, boundaryBox);
 					mesh.setMaterial(material);
-					Tile tile = new Tile(mesh, board, xx, maxHeight + 1, z - (tileSize - 1));
+					Tile tile = new Tile(mesh, xx / tileSize, maxHeight + 1, (z - (tileSize - 1)) / tileSize);
 					tile.setPosition(xx, 0, z - (tileSize - 1));
 					board.getTiles().add(tile);
 					

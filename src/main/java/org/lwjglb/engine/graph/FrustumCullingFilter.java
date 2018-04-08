@@ -2,6 +2,8 @@ package org.lwjglb.engine.graph;
 
 import java.util.List;
 import java.util.Map;
+
+import org.joml.AABBf;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -27,25 +29,21 @@ public class FrustumCullingFilter {
     }
 
     public void filter(Map<? extends Mesh, List<GameItem>> mapMesh) {
-        for (Map.Entry<? extends Mesh, List<GameItem>> entry : mapMesh.entrySet()) {
-            List<GameItem> gameItems = entry.getValue();
-            filter(gameItems, entry.getKey().getBoundingRadius());
-        }
-    }
-
-    public void filter(List<GameItem> gameItems, float meshBoundingRadius) {
-        float boundingRadius;
-        Vector3f pos;
-        for (GameItem gameItem : gameItems) {
-            if (!gameItem.isDisableFrustumCulling()) {
-                boundingRadius = gameItem.getScale() * meshBoundingRadius;
-                pos = gameItem.getPosition();
-                gameItem.setInsideFrustum(insideFrustum(pos.x, pos.y, pos.z, boundingRadius));
+        for (List<GameItem> gameItems : mapMesh.values()) {
+        	for (GameItem gameItem : gameItems) {
+                if (!gameItem.isDisableFrustumCulling()) {
+                    gameItem.setInsideFrustum(insideFrustum(gameItem));
+                }
             }
         }
     }
 
-    public boolean insideFrustum(float x0, float y0, float z0, float boundingRadius) {
-        return frustumInt.testSphere(x0, y0, z0, boundingRadius);
+    public boolean insideFrustum(GameItem gameItem) {
+        AABBf boundaryBox = gameItem.getMesh().getBoundaryBox();
+    	Vector3f min = new Vector3f(gameItem.getPosition());
+    	Vector3f max = new Vector3f(gameItem.getPosition());
+        min.add(boundaryBox.minX * gameItem.getScale(), boundaryBox.minY * gameItem.getScale(), boundaryBox.minZ * gameItem.getScale());
+        max.add(boundaryBox.maxX * gameItem.getScale(), boundaryBox.maxY * gameItem.getScale(), boundaryBox.maxZ * gameItem.getScale());
+        return frustumInt.testAab(min, max);
     }
 }

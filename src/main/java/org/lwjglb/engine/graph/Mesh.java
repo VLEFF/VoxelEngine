@@ -29,8 +29,6 @@ public class Mesh {
     private final int vertexCount;
 
     private Material material;
-
-    private float boundingRadius;
     
     private AABBf boundaryBox;
     
@@ -56,9 +54,7 @@ public class Mesh {
         FloatBuffer weightsBuffer = null;
         IntBuffer jointIndicesBuffer = null;
         IntBuffer indicesBuffer = null;
-        try {
-            calculateBoundingRadius(positions);
-            
+        try {            
             this.boundaryBox = boundaryBox;
             
             vertexCount = indices.length;
@@ -189,15 +185,6 @@ public class Mesh {
             }
         }
     }    
-    
-    private void calculateBoundingRadius(float positions[]) {
-        int length = positions.length;
-        boundingRadius = 0;
-        for(int i=0; i< length; i++) {
-            float pos = positions[i];
-            boundingRadius = Math.max(Math.abs(pos), boundingRadius);
-        }
-    }
 
     public Material getMaterial() {
         return material;
@@ -213,14 +200,6 @@ public class Mesh {
 
     public int getVertexCount() {
         return vertexCount;
-    }
-
-    public float getBoundingRadius() {
-        return boundingRadius;
-    }
-
-    public void setBoundingRadius(float boundingRadius) {
-        this.boundingRadius = boundingRadius;
     }
     
     public AABBf getBoundaryBox() {
