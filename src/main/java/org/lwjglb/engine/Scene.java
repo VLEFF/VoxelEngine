@@ -29,8 +29,6 @@ public class Scene {
     private SceneLight sceneLight;
 
     private Fog fog;
-
-    private boolean renderShadows;
     
     private IParticleEmitter[] particleEmitters;
 
@@ -38,7 +36,6 @@ public class Scene {
         meshMap = new HashMap<>();
         instancedMeshMap = new HashMap<>();
         fog = Fog.NOFOG;
-        renderShadows = true;
     }
 
     public Map<Mesh, List<GameItem>> getGameMeshes() {
@@ -47,10 +44,6 @@ public class Scene {
 
     public Map<InstancedMesh, List<GameItem>> getGameInstancedMeshes() {
         return instancedMeshMap;
-    }
-
-    public boolean isRenderShadows() {
-        return renderShadows;
     }
 
     public void setGameItems(GameItem[] gameItems) {
@@ -107,10 +100,6 @@ public class Scene {
 
     public SkyBox getSkyBox() {
         return skyBox;
-    }
-
-    public void setRenderShadows(boolean renderShadows) {
-        this.renderShadows = renderShadows;
     }
 
     public void setSkyBox(SkyBox skyBox) {

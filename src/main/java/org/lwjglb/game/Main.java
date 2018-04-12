@@ -16,6 +16,9 @@ public class Main {
             opts.compatibleProfile = true;
             opts.antialiasing = true;
             opts.frustumCulling = true;
+            opts.activeAmbiantOcclusion = true;
+            opts.activeBorder = true;
+            opts.activeShadow = 2;
             GameEngine gameEng = new GameEngine("GAME", vSync, opts, gameLogic);
             gameEng.start();
         } catch (Exception excp) {

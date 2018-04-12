@@ -40,12 +40,6 @@ public class Window {
     private final WindowOptions opts;
 
     private final Matrix4f projectionMatrix;
-    
-    private boolean activeBorder;
-    
-    private boolean activeTile;
-    
-    private boolean activeAmbiantOcclusion;
 
     public Window(String title, int width, int height, boolean vSync, WindowOptions opts) {
         this.title = title;
@@ -107,13 +101,16 @@ public class Window {
                 glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
             }
             if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
-            	activeBorder = !activeBorder;
+            	opts.activeBorder = !opts.activeBorder;
             }
             if (key == GLFW_KEY_F2 && action == GLFW_PRESS) {
-            	activeTile = !activeTile;
+            	opts.activeTile = !opts.activeTile;
             }
             if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
-            	activeAmbiantOcclusion = !activeAmbiantOcclusion;
+            	opts.activeAmbiantOcclusion = !opts.activeAmbiantOcclusion;
+            }
+            if (key == GLFW_KEY_F4 && action == GLFW_PRESS) {
+            	opts.activeShadow = opts.activeShadow > 0 ? 0 : 1;
             }
         });
 
@@ -245,18 +242,6 @@ public class Window {
     public void setvSync(boolean vSync) {
         this.vSync = vSync;
     }
-    
-    public boolean isActiveBorder() {
-		return activeBorder;
-	}
-    
-    public boolean isActiveTile() {
-		return activeTile;
-	}
-    
-    public boolean isActiveAmbiantOcclusion() {
-		return activeAmbiantOcclusion;
-	}
 
     public void update() {
         glfwSwapBuffers(windowHandle);
@@ -279,6 +264,19 @@ public class Window {
 
         public boolean antialiasing;
 
-        public boolean frustumCulling;        
+        public boolean frustumCulling;    
+
+        /*
+         * 0 disabled
+         * 1 init
+         * 2 enabled
+         */
+        public int activeShadow;
+        
+        public boolean activeBorder;
+        
+        public boolean activeTile;
+        
+        public boolean activeAmbiantOcclusion;
     }
 }

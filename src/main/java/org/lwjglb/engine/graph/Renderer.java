@@ -21,7 +21,6 @@ import org.lwjglb.engine.MouseInput;
 import org.lwjglb.engine.Scene;
 import org.lwjglb.engine.SceneLight;
 import org.lwjglb.engine.items.SkyBox;
-import org.lwjglb.engine.items.Tile;
 import org.lwjglb.engine.Utils;
 import org.lwjglb.engine.Window;
 import org.lwjglb.engine.graph.anim.AnimGameItem;
@@ -103,7 +102,11 @@ public class Renderer {
         }
 
         // Render depth map before view ports has been set up
-        if (scene.isRenderShadows() && sceneChanged) {
+        if(window.getWindowOptions().activeShadow == 1) {
+        	sceneChanged = true;
+        	window.getWindowOptions().activeShadow = 2;
+        }
+        if (window.getWindowOptions().activeShadow == 2 && sceneChanged) {
             shadowRenderer.render(window, scene, camera, transformation, this);
         }
 
@@ -296,10 +299,10 @@ public class Renderer {
         
         gBufferShaderProgram.setUniform("tileSize", scene.getBoard() != null ? scene.getBoard().getTileSize() : 0);
         
-        gBufferShaderProgram.setUniform("renderShadow", scene.isRenderShadows() ? 1 : 0);
-        gBufferShaderProgram.setUniform("renderBorder", window.isActiveBorder() ? 1 : 0);
-        gBufferShaderProgram.setUniform("renderTile", window.isActiveTile() ? 1 : 0);
-        gBufferShaderProgram.setUniform("renderAmbiantOcclusion", window.isActiveAmbiantOcclusion() ? 1 : 0);
+        gBufferShaderProgram.setUniform("renderShadow", window.getWindowOptions().activeShadow > 0 ? 1 : 0);
+        gBufferShaderProgram.setUniform("renderBorder", window.getWindowOptions().activeBorder ? 1 : 0);
+        gBufferShaderProgram.setUniform("renderTile", window.getWindowOptions().activeTile ? 1 : 0);
+        gBufferShaderProgram.setUniform("renderAmbiantOcclusion", window.getWindowOptions().activeAmbiantOcclusion ? 1 : 0);
         
 
         renderNonInstancedMeshes(scene);

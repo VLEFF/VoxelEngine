@@ -9,6 +9,7 @@ public class Player extends GameItem{
 	private int z;
 	
 	private int movementRange;
+	private int remainingMovement;
 	
 	public Player(Mesh mesh, int x, int y, int z) {
 		super(mesh);
@@ -47,5 +48,13 @@ public class Player extends GameItem{
 	
 	public void setMovementRange(int movementRange) {
 		this.movementRange = movementRange;
+	}
+	
+	public int getRemainingMovement() {
+		return remainingMovement;
+	}
+	
+	public void setRemainingMovement(int remainingMovement) {
+		this.remainingMovement = remainingMovement;
 	}
 }

@@ -1,9 +1,7 @@
 package org.lwjglb.game;
 
-import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.ArrayList;
@@ -23,7 +21,6 @@ import org.lwjglb.engine.items.Board;
 import org.lwjglb.engine.items.GameItem;
 import org.lwjglb.engine.items.Player;
 import org.lwjglb.engine.items.SkyBox;
-import org.lwjglb.engine.loaders.assimp.StaticMeshesLoader;
 import org.lwjglb.engine.loaders.vox.VOXLoader;
 
 public class DummyGame implements IGameLogic {
@@ -50,10 +47,6 @@ public class DummyGame implements IGameLogic {
 
     private boolean sceneChanged;
     
-    private boolean activeBorder;
-    
-    private boolean activeTile;
-    
     private MouseBoxSelectionDetector mbsd = new MouseBoxSelectionDetector();
 
     public DummyGame() {
@@ -64,8 +57,6 @@ public class DummyGame implements IGameLogic {
         angleInc = 0;
         lightAngle = 90;
         firstTime = true;
-        activeBorder = true;
-        activeTile = false;
     }
 
     @Override
@@ -76,7 +67,7 @@ public class DummyGame implements IGameLogic {
 
         Mesh deerMesh = VOXLoader.loadMesh("src/main/resources/models/untitled/deer.vox");
         
-        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/monu3-bis.vox", 4);
+        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/Crane_Comple_MagicaVoxel.vox", 6);
         scene.setBoard(board);
 
         
@@ -95,9 +86,6 @@ public class DummyGame implements IGameLogic {
         deer.setScale(0.25f);
         deer.setMovementRange(2);
         scene.setPlayer(deer);
-
-        // Shadows
-        scene.setRenderShadows(true);
 
         float skyBoxScale = 100.0f;
         SkyBox skyBox = new SkyBox("src/main/resources/models/skybox-cross-left.obj", "src/main/resources/textures/violentDays.jpg");
@@ -165,11 +153,6 @@ public class DummyGame implements IGameLogic {
         } else {
             angleInc = 0;
         }
-        if (window.isKeyPressed(GLFW_KEY_F1)) {
-        	activeBorder = !activeBorder;
-        } else if (window.isKeyPressed(GLFW_KEY_F2)) {
-        	activeTile = !activeTile;
-        }
     }
 
     @Override
@@ -181,12 +164,15 @@ public class DummyGame implements IGameLogic {
             sceneChanged = true;
         }
         if (mouseInput.isLeftButtonPressed()) {
-            scene.getBoard().getTiles().forEach(t -> {
+            /*scene.getBoard().getTiles().forEach(t -> {
         		t.setSelected(false);
             	if(t.isHovered()) {
             		t.setSelected(true);
             	}
-            });
+            });*/
+        	if(scene.getPlayer() != null) {
+        		scene.getPlayer().setSelected(scene.getPlayer().isHovered());
+        	}
         }
 
         // Update camera position
@@ -204,10 +190,10 @@ public class DummyGame implements IGameLogic {
 
         // Update view matrix
         camera.updateViewMatrix();
-        if(window.isActiveTile()) {
-	        if(scene.getBoard() != null) {
-		    	boolean hoveredGameItem = mbsd.hoverGameItem(new GameItem[] {scene.getPlayer()}, window, mouseInput.getCurrentPos(), camera);
-		    	if(hoveredGameItem) {
+        if(scene.getBoard() != null) {
+        	if(window.getWindowOptions().activeTile) {
+		    	mbsd.hoverGameItem(new GameItem[] {scene.getPlayer()}, window, mouseInput.getCurrentPos(), camera);
+		    	if(scene.getPlayer() != null && (scene.getPlayer().isHovered() || scene.getPlayer().isSelected())) {
 		    		scene.getBoard().getTiles().forEach(t -> {
 		    			t.setHighlighted(false);
 		    			t.setHovered(false);
@@ -222,17 +208,12 @@ public class DummyGame implements IGameLogic {
 		    		mbsd.hoverGameItem(scene.getBoard(), window, mouseInput.getCurrentPos(), camera);
 		    	}
 		    	
-		    	hud.setFrustrumMax(scene.getBoard().getTiles().size());
-		    	hud.setFrustrumShown(scene.getBoard().getTiles().stream().filter(t -> t.isInsideFrustum()).count());
 		    	hud.getHoveredTiles().clear();
 		        hud.getSelectedTiles().clear();
 		        hud.getHighlightedTiles().clear();
 		        scene.getBoard().getTiles().forEach(t -> {
-		        	if (mouseInput.isLeftButtonPressed()) {
-		        		t.setSelected(false);
-		        		if(t.isHovered()) {
-		            		t.setSelected(true);
-		            	}
+		        	if (mouseInput.isLeftButtonPressed() && t.isHighlighted()) {
+		        		
 		        	}
 		        	if(t.isHovered()) {
 		        		hud.getHoveredTiles().add(t);
@@ -245,6 +226,8 @@ public class DummyGame implements IGameLogic {
 		        	}
 		        });
 	        }
+        	hud.setFrustrumMax(scene.getBoard().getTiles().size());
+	    	hud.setFrustrumShown(scene.getBoard().getTiles().stream().filter(t -> t.isInsideFrustum()).count());
         }
     }
 
