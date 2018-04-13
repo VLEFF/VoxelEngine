@@ -67,7 +67,7 @@ public class DummyGame implements IGameLogic {
 
         Mesh deerMesh = VOXLoader.loadMesh("src/main/resources/models/untitled/deer.vox");
         
-        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/Crane_Comple_MagicaVoxel.vox", 6);
+        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/toto.vox", 6);
         scene.setBoard(board);
 
         
@@ -107,11 +107,11 @@ public class DummyGame implements IGameLogic {
         scene.setSceneLight(sceneLight);
 
         // Ambient Light
-        sceneLight.setAmbientLight(new Vector3f(0.3f, 0.3f, 0.3f));
+        sceneLight.setAmbientLight(new Vector3f(0.7f, 0.7f, 0.7f));
         sceneLight.setSkyBoxLight(new Vector3f(1.0f, 1.0f, 1.0f));
 
         // Directional Light
-        float lightIntensity = 0.8f;
+        float lightIntensity = 1f;
         Vector3f lightDirection = new Vector3f(0, 1, 1);
         DirectionalLight directionalLight = new DirectionalLight(new Vector3f(1, 1, 1), lightDirection, lightIntensity);
         sceneLight.setDirectionalLight(directionalLight);

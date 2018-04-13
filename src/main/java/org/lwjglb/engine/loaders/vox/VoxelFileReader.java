@@ -66,7 +66,9 @@ abstract class VoxelFileReader {
 			} catch (IOException ignored) {
 				break;
 			}
-
+			if (chunk.id == magicValue('n', 'T', 'R', 'N')) {
+				//System.out.println(read32(input));
+			}
 			if (chunk.id == magicValue('S', 'I', 'Z', 'E')) {
 				readVoxSize(input, vox);
 			} else if (chunk.id == magicValue('X', 'Y', 'Z', 'I')) {
