@@ -1,5 +1,8 @@
 package org.lwjglb.engine.loaders.vox;
 
+import org.joml.Matrix3f;
+import org.joml.Vector3i;
+
 public class VoxModel {
 
   private int width;
@@ -11,6 +14,10 @@ public class VoxModel {
   private Byte[][][] matrice;
 
   private int numVoxel;
+
+  private Vector3i translation;
+
+  private Matrix3f rotation;
 
   public int getWidth() {
     return width;
@@ -50,5 +57,21 @@ public class VoxModel {
 
   public void setNumVoxel(int numVoxel) {
     this.numVoxel = numVoxel;
+  }
+
+  public Vector3i getTranslation() {
+    return translation;
+  }
+
+  public void setTranslation(Vector3i translation) {
+    this.translation = translation;
+  }
+
+  public Matrix3f getRotation() {
+    return rotation;
+  }
+
+  public void setRotation(Matrix3f rotation) {
+    this.rotation = rotation;
   }
 }

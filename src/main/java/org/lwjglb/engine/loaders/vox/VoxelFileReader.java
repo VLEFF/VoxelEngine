@@ -20,22 +20,17 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.joml.AABBf;
+import org.joml.Matrix3f;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.lwjglb.engine.Utils;
 import org.lwjglb.engine.graph.Mesh;
 import org.lwjglb.engine.graph.Texture;
 
 class VoxelFileReader {
 
-  protected final static float[][] POSITIONS_RIGHT_FACE = {{1f, 0f, 1f}, {1f, 0f, 0f}, {1f, 1f, 0f}, {1f, 1f, 1f}};
-  protected final static float[][] POSITIONS_LEFT_FACE = {{0f, 1f, 1f}, {0f, 1f, 0f}, {0f, 0f, 0f}, {0f, 0f, 1f}};
-  protected final static float[][] POSITIONS_TOP_FACE = {{0f, 1f, 1f}, {1f, 1f, 1f}, {1f, 1f, 0f}, {0f, 1f, 0f}};
-  protected final static float[][] POSITIONS_BOTTOM_FACE = {{0f, 0f, 0f}, {1f, 0f, 0f}, {1f, 0f, 1f}, {0f, 0f, 1f}};
-  protected final static float[][] POSITIONS_FRONT_FACE = {{1f, 0f, 1f}, {1f, 1f, 1f}, {0f, 1f, 1f}, {0f, 0f, 1f}};
-  protected final static float[][] POSITIONS_BACK_FACE = {{0f, 0f, 0f}, {0f, 1f, 0f}, {1f, 1f, 0f}, {1f, 0f, 0f}};
-
   protected static class Chunk {
-    long id;
+    String id;
     int contentSize;
     int childrenSize;
   }
@@ -46,7 +41,7 @@ class VoxelFileReader {
     BufferedInputStream input = new BufferedInputStream(new FileInputStream(file));
     Chunk chunk = new Chunk();
 
-    if (read32(input) != magicValue('V', 'O', 'X', ' ')) {
+    if (!"VOX ".equals(readString(input, 4))) {
       throw new Exception("Not a valid .vox file.");
     }
 
@@ -55,7 +50,7 @@ class VoxelFileReader {
     }
 
     readChunk(input, chunk);
-    if (chunk.id != magicValue('M', 'A', 'I', 'N')) {
+    if (!"MAIN".equals(chunk.id)) {
       throw new Exception("Main chunk expected.");
     }
 
@@ -70,24 +65,18 @@ class VoxelFileReader {
       } catch (IOException ignored) {
         break;
       }
-      if (chunk.id == magicValue('S', 'I', 'Z', 'E')) {
-        readVoxSize(input, vox);
-      } else if (chunk.id == magicValue('X', 'Y', 'Z', 'I')) {
-        readVoxContent(input, vox);
-      } else if (chunk.id == magicValue('R', 'G', 'B', 'A')) {
-        readVoxPalette(input, vox);
-      } else if (chunk.id == magicValue('n', 'T', 'R', 'N')) {
-        readTransformNode(input, vox);
-      } else if (chunk.id == magicValue('n', 'G', 'R', 'P')) {
-        readGroupNode(input, vox);
-      } else if (chunk.id == magicValue('n', 'S', 'H', 'P')) {
-        readShapeNode(input, vox);
-      } else {
-        skip(input, chunk);
+      switch (chunk.id) {
+        case "SIZE" : readVoxSize(input, vox); break;
+        case "XYZI" : readVoxContent(input, vox); break;
+        case "RGBA" : readVoxPalette(input, vox); break;
+        case "nTRN" : readTransformNode(input, vox); break;
+        case "nGRP" : readGroupNode(input, vox); break;
+        case "nSHP" : readShapeNode(input, vox); break;
+        default : skip(input, chunk); break;
       }
-
     }
     input.close();
+
     return vox;
   }
 
@@ -195,23 +184,62 @@ class VoxelFileReader {
       shapeNodeModel.setModelAttrib(readAttribMap(input));
       shapeNode.getShapeNodeModels().add(shapeNodeModel);
     }
-    insertShapeNodeInTransformNode(shapeNode, vox.getTransformNode());
+    insertShapeNodeInTransformNode(shapeNode, vox.getTransformNode(), vox, new Vector3i(), new Matrix3f());
   }
 
-  private boolean insertShapeNodeInTransformNode(ShapeNode shapeNode, TransformNode transformNode){
+  private boolean insertShapeNodeInTransformNode(ShapeNode shapeNode, TransformNode transformNode, Vox vox, Vector3i translation, Matrix3f rotation){
+    translation = new Vector3i(translation).add(getTranslationVector(transformNode));
+    rotation = new Matrix3f(rotation).add(getRotationMatrix(transformNode));
     if(transformNode.getShapeNode() != null){
       return false;
     }
     if(transformNode.getGroupNode() == null){
+      applyTransformation(vox, shapeNode, translation, rotation);
       transformNode.setShapeNode(shapeNode);
       return true;
     }
     for(int i = 0 ; i < transformNode.getGroupNode().getTransformNodes().size() ; i++){
-      if(insertShapeNodeInTransformNode(shapeNode, transformNode.getGroupNode().getTransformNodes().get(i))){
+      if(insertShapeNodeInTransformNode(shapeNode, transformNode.getGroupNode().getTransformNodes().get(i), vox, translation, rotation)){
         return true;
       }
     }
     return false;
+  }
+
+  private Vector3i getTranslationVector(TransformNode transformNode) {
+    String[] translationTab = transformNode.getTransformations().get(0).getOrDefault("_t", "0 0 0").split(" ");
+    try {
+      return new Vector3i(Integer.parseInt(translationTab[0]), Integer.parseInt(translationTab[1]), Integer.parseInt(translationTab[2]));
+    } catch (NumberFormatException e) {
+      return new Vector3i();
+    }
+  }
+
+  private Matrix3f getRotationMatrix(TransformNode transformNode) {
+    String rotation = transformNode.getTransformations().get(0).get("_r");
+    Matrix3f matrix = new Matrix3f();
+    if(rotation != null) {
+      byte b = rotation.getBytes(StandardCharsets.UTF_8)[0];
+      int firstLineIndex = b & 0b00000011;
+      int secondLineIndex = (b >> 2) & 0b00000011;
+      int firstLineSign = (b >> 4) & 0b00000001;
+      int secondLineSign = (b >> 5) & 0b00000001;
+      int thirdLineSign = (b >> 6) & 0b00000001;
+
+      matrix.setRow(0, firstLineIndex == 0 ? 1 : 0, firstLineIndex == 1 ? 1 : 0, firstLineIndex == 2 ? 1 : 0);
+      matrix.setRow(0, secondLineIndex == 0 ? 1 : 0, secondLineIndex == 1 ? 1 : 0, secondLineIndex == 2 ? 1 : 0);
+      matrix.setRow(0, 3 - firstLineIndex - secondLineIndex == 0 ? 1 : 0, 3 - firstLineIndex - secondLineIndex == 1 ? 1 : 0, 3 - firstLineIndex - secondLineIndex == 2 ? 1 : 0);
+      matrix.set(firstLineIndex, 0, matrix.get(firstLineIndex, 0) * (firstLineSign == 1 ? -1 : 1));
+      matrix.set(secondLineIndex, 1, matrix.get(secondLineIndex, 1) * (secondLineSign == 1 ? -1 : 1));
+      matrix.set(3 - firstLineIndex - secondLineIndex, 2, matrix.get(3 - firstLineIndex - secondLineIndex, 2) * (thirdLineSign == 1 ? -1 : 1));
+    }
+    return matrix;
+  }
+
+  private void applyTransformation(Vox vox, ShapeNode shapeNode, Vector3i translation, Matrix3f rotation) {
+    VoxModel voxModel = vox.getVoxModels().get(shapeNode.getShapeNodeModels().get(0).getModelId().intValue());
+    voxModel.setTranslation(translation);
+    voxModel.setRotation(rotation);
   }
 
   private void skip(BufferedInputStream input, Chunk chunk) throws Exception {
@@ -235,7 +263,7 @@ class VoxelFileReader {
 	}
 
   protected void readChunk(BufferedInputStream input, Chunk chunk) throws IOException {
-    chunk.id = read32(input);
+    chunk.id = readString(input, 4);
     chunk.contentSize = (int) read32(input);
     chunk.childrenSize = (int) read32(input);
   }
@@ -249,7 +277,11 @@ class VoxelFileReader {
 
   protected String readString(BufferedInputStream input) throws IOException {
     Long length = read32(input);
-    byte[] stringBuffer = new byte[length.intValue()];
+    return readString(input, length.intValue());
+  }
+
+  protected String readString(BufferedInputStream input, int length) throws IOException {
+    byte[] stringBuffer = new byte[length];
     if (input.read(stringBuffer) < length) {
       throw new IOException();
     }
@@ -285,8 +317,8 @@ class VoxelFileReader {
     return (0xff << 24) | (r << 16) | (g << 8) | b; //pixel
   }
 	
-	protected float getColorCoord(VoxModel voxModel, int x, int y, int z) {
-		byte color = voxModel.getMatrice()[x][y][z];
+	protected float getColorCoord(VoxModel voxModel, Vector3i voxPosition) {
+		byte color = voxModel.getMatrice()[voxPosition.x][voxPosition.y][voxPosition.z];
 		return (1.0f + ((1.0f/256.0f) * color) - (1.0f/512.0f)) % 1;
 	}
 	
@@ -314,8 +346,11 @@ class VoxelFileReader {
 		}
 	}
 	
-	protected void addSurroundings(List<Float> surroundings, VoxModel voxModel, int x, int y, int z, Vector3f normal) {
-		boolean inBoundary = isInBoundary(voxModel, x, y, z, normal);
+	protected void addSurroundings(List<Float> surroundings, VoxModel voxModel, Vector3i voxPosition, Vector3f normal) {
+		boolean inBoundary = isInBoundary(voxModel, voxPosition, normal);
+        int x = voxPosition.x;
+        int y = voxPosition.y;
+        int z = voxPosition.z;
 		for(int i = 0 ; i < 4 ; i++) {
 			if(normal.x != 0) {
 				surroundings.add(inBoundary && y > 0 && voxModel.getMatrice()[x + (int) normal.x][y - 1][z] != null ? 1f : 0f);
@@ -336,8 +371,11 @@ class VoxelFileReader {
 		}
 	}
 	
-	protected void addSurroundingsDiag(List<Float> surroundingsDiag, VoxModel voxModel, int x, int y, int z, Vector3f normal) {
-		boolean inBoundary = isInBoundary(voxModel, x, y, z, normal);
+	protected void addSurroundingsDiag(List<Float> surroundingsDiag, VoxModel voxModel, Vector3i voxPosition, Vector3f normal) {
+		boolean inBoundary = isInBoundary(voxModel, voxPosition, normal);
+		int x = voxPosition.x;
+        int y = voxPosition.y;
+        int z = voxPosition.z;
 		for(int i = 0 ; i < 4 ; i++) {
 			if(normal.x != 0) {
 				surroundingsDiag.add(inBoundary && y > 0 && z > 0 && voxModel.getMatrice()[x + (int) normal.x][y - 1][z - 1] != null ? 1f : 0f);
@@ -358,7 +396,10 @@ class VoxelFileReader {
 		}
 	}
 	
-	private boolean isInBoundary(VoxModel voxModel, int x, int y, int z, Vector3f normal) {
+	private boolean isInBoundary(VoxModel voxModel, Vector3i voxPosition, Vector3f normal) {
+        int x = voxPosition.x;
+        int y = voxPosition.y;
+        int z = voxPosition.z;
 		return x + normal.x < voxModel.getWidth() 
 				&& x + normal.x >= 0 
 				&& y + normal.y < voxModel.getHeight()
@@ -367,11 +408,11 @@ class VoxelFileReader {
 				&& z + normal.z >= 0;
 	}
 	
-	protected void addPositions(List<Float> positions, int x, int y, int z, float[][] positionsFace){
+	protected void addPositions(List<Float> positions, Vector3i voxPosition, float[][] positionsFace){
 		for(int i = 0 ; i < 4 ; i++) {
-			positions.add(positionsFace[i][0] + x);
-			positions.add(positionsFace[i][1] + y);
-			positions.add(positionsFace[i][2] + z);
+			positions.add(positionsFace[i][0] + voxPosition.x);
+			positions.add(positionsFace[i][1] + voxPosition.y);
+			positions.add(positionsFace[i][2] + voxPosition.z);
 		}
 	}
 	

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.joml.AABBf;
-import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.lwjglb.engine.graph.Material;
 import org.lwjglb.engine.graph.Mesh;
 import org.lwjglb.engine.items.Board;
@@ -19,12 +19,12 @@ class BoardVoxelFileReader extends VoxelFileReader{
 		VoxModel voxModel = vox.getVoxModels().get(0);
 		Board board = new Board(voxModel.getWidth(), voxModel.getHeight(), voxModel.getDepth(), tileSize);
 		Material material = new Material(createTexture(vox));
-		List<Float> positions = new ArrayList<Float>();
-		List<Float> surroundings = new ArrayList<Float>();
-		List<Float> surroundingsDiag = new ArrayList<Float>();
-		List<Float> textCoords = new ArrayList<Float>();
-		List<Float> normals = new ArrayList<Float>();
-		List<Integer> indices = new ArrayList<Integer>();
+		List<Float> positions = new ArrayList<>();
+		List<Float> surroundings = new ArrayList<>();
+		List<Float> surroundingsDiag = new ArrayList<>();
+		List<Float> textCoords = new ArrayList<>();
+		List<Float> normals = new ArrayList<>();
+		List<Integer> indices = new ArrayList<>();
 		
 		int maxHeight = 0;
 		
@@ -37,63 +37,21 @@ class BoardVoxelFileReader extends VoxelFileReader{
 							if(y > maxHeight) {
 								maxHeight = y;
 							}
-							
-							float colorCoord = getColorCoord(voxModel, x, y, z);
-							
-							if(x == voxModel.getWidth() - 1 || voxModel.getMatrice()[x + 1][y][z] == null) {
-								Vector3f normal = new Vector3f(1,0,0);
-								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_RIGHT_FACE);
-								addSurroundings(surroundings, voxModel, x, y, z, normal);
-								addSurroundingsDiag(surroundingsDiag, voxModel, x, y, z, normal);
-								addNormals(normals, normal);
-								addIndices(indices);
-								addTextCoord(textCoords, colorCoord);
-							}
-							if(x == 0 || voxModel.getMatrice()[x - 1][y][z] == null) {
-								Vector3f normal = new Vector3f(-1,0,0);
-								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_LEFT_FACE);
-								addSurroundings(surroundings, voxModel, x, y, z, normal);
-								addSurroundingsDiag(surroundingsDiag, voxModel, x, y, z, normal);
-								addNormals(normals, normal);
-								addIndices(indices);
-								addTextCoord(textCoords, colorCoord);
-							}
-							if(y == voxModel.getHeight() - 1 || voxModel.getMatrice()[x][y + 1][z] == null) {
-								Vector3f normal = new Vector3f(0,1,0);
-								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_TOP_FACE);
-								addSurroundings(surroundings, voxModel, x, y, z, normal);
-								addSurroundingsDiag(surroundingsDiag, voxModel, x, y, z, normal);
-								addNormals(normals, normal);
-								addIndices(indices);
-								addTextCoord(textCoords, colorCoord);
-							}
-							if(y == 0 || voxModel.getMatrice()[x][y - 1][z] == null) {
-								Vector3f normal = new Vector3f(0,-1,0);
-								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_BOTTOM_FACE);
-								addSurroundings(surroundings, voxModel, x, y, z, normal);
-								addSurroundingsDiag(surroundingsDiag, voxModel, x, y, z, normal);
-								addNormals(normals, normal);
-								addIndices(indices);
-								addTextCoord(textCoords, colorCoord);
-							}
-							if(z == voxModel.getDepth() - 1 || voxModel.getMatrice()[x][y][z + 1] == null) {
-								Vector3f normal = new Vector3f(0,0,1);
-								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_FRONT_FACE);
-								addSurroundings(surroundings, voxModel, x, y, z, normal);
-								addSurroundingsDiag(surroundingsDiag, voxModel, x, y, z, normal);
-								addNormals(normals, normal);
-								addIndices(indices);
-								addTextCoord(textCoords, colorCoord);
-							}
-							if(z == 0 || voxModel.getMatrice()[x][y][z - 1] == null) {
-								Vector3f normal = new Vector3f(0,0,-1);
-								addPositions(positions, x % tileSize, y, z % tileSize, POSITIONS_BACK_FACE);
-								addSurroundings(surroundings, voxModel, x, y, z, normal);
-								addSurroundingsDiag(surroundingsDiag, voxModel, x, y, z, normal);
-								addNormals(normals, normal);
-								addIndices(indices);
-								addTextCoord(textCoords, colorCoord);
-							}
+
+                            Vector3i voxPosition = new Vector3i(x,y,z).add(voxModel.getTranslation());
+                            Vector3i voxPositionModuloTileSize = new Vector3i(voxPosition.x % tileSize,voxPosition.y ,voxPosition.z % tileSize);
+							float colorCoord = getColorCoord(voxModel, voxPosition);
+
+                            for(VoxelFaceParam voxelFaceParam : VoxelFaceParam.values()) {
+                                if (voxelFaceParam.getFilter().test(voxPosition, voxModel)) {
+                                    addPositions(positions, voxPositionModuloTileSize, voxelFaceParam.getPositions());
+                                    addSurroundings(surroundings, voxModel, voxPosition, voxelFaceParam.getNormal());
+                                    addSurroundingsDiag(surroundingsDiag, voxModel, voxPosition, voxelFaceParam.getNormal());
+                                    addNormals(normals, voxelFaceParam.getNormal());
+                                    addIndices(indices);
+                                    addTextCoord(textCoords, colorCoord);
+                                }
+                            }
 						}
 					}
 				}
@@ -105,12 +63,12 @@ class BoardVoxelFileReader extends VoxelFileReader{
 					tile.setPosition(xx, 0, z - (tileSize - 1));
 					board.getTiles().add(tile);
 					
-					positions = new ArrayList<Float>();
-					surroundings = new ArrayList<Float>();
-					surroundingsDiag = new ArrayList<Float>();
-					textCoords = new ArrayList<Float>();
-					normals = new ArrayList<Float>();
-					indices = new ArrayList<Integer>();
+					positions = new ArrayList<>();
+					surroundings = new ArrayList<>();
+					surroundingsDiag = new ArrayList<>();
+					textCoords = new ArrayList<>();
+					normals = new ArrayList<>();
+					indices = new ArrayList<>();
 					maxHeight = 0;
 				}
 			}
