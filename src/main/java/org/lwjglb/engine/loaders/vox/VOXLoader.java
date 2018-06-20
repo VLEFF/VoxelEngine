@@ -6,7 +6,7 @@ import org.lwjglb.engine.items.Board;
 
 public class VOXLoader {
 
-    public static Mesh loadMesh(String fileName) throws Exception {
+    public static Mesh[] loadMesh(String fileName) throws Exception {
     	SimpleVoxelFileReader vfr = new SimpleVoxelFileReader();
     	return vfr.read(new File(fileName));
     }

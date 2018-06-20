@@ -65,27 +65,15 @@ public class DummyGame implements IGameLogic {
         hud.init(window);
         scene = new Scene();
 
-        Mesh deerMesh = VOXLoader.loadMesh("src/main/resources/models/untitled/deer.vox");
-        
-        Board board = VOXLoader.loadBoard("src/main/resources/models/untitled/toto.vox", 6);
-        scene.setBoard(board);
-
-        
-
         List<GameItem> cubes = new ArrayList<>();
+
+        Mesh[] world = VOXLoader.loadMesh("src/main/resources/models/untitled/toto.vox");    
+        for(Mesh mesh : world) {
+        	GameItem item = new GameItem(mesh);
+            cubes.add(item);
+        }
+        scene.setGameItems(cubes.toArray(new GameItem[cubes.size()]));
         
-        /*Mesh test = VOXLoader.loadMesh("src/main/resources/models/untitled/1x1x1.vox");
-        GameItem item = new GameItem(test);
-        item.setScale(10);
-        item.setPosition(0, 80, 0);
-        cubes.add(item);
-        scene.setGameItems(cubes.toArray(new GameItem[cubes.size()]));*/
-        
-        Player deer = new Player(deerMesh, 4, 16, 19);
-        deer.setPosition(17, 16, 76);
-        deer.setScale(0.25f);
-        deer.setMovementRange(2);
-        scene.setPlayer(deer);
 
         float skyBoxScale = 100.0f;
         SkyBox skyBox = new SkyBox("src/main/resources/models/skybox-cross-left.obj", "src/main/resources/textures/violentDays.jpg");

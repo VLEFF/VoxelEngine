@@ -1,15 +1,29 @@
 package org.lwjglb.engine.loaders.vox;
 
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.joml.AABBf;
+import org.joml.Vector3f;
+import org.lwjglb.engine.Utils;
+import org.lwjglb.engine.graph.Mesh;
+import org.lwjglb.engine.graph.Texture;
 
 class VoxelFileReader {
 
@@ -207,6 +221,18 @@ class VoxelFileReader {
       throw new Exception("Invalid number of bytes skipped.");
     }
   }
+  
+	public static ByteBuffer convertImageData(BufferedImage bi) {
+	    try {
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+	        ImageIO.write(bi, "png", os);
+			InputStream is = new ByteArrayInputStream(os.toByteArray());
+			return Utils.inputStreamToByteBuffer(is, 1024);
+	    } catch (IOException ex) {
+	        //TODO
+	    }
+	    return null;
+	}
 
   protected void readChunk(BufferedInputStream input, Chunk chunk) throws IOException {
     chunk.id = read32(input);
@@ -258,4 +284,113 @@ class VoxelFileReader {
     int r = rgba & 0x000000ff;
     return (0xff << 24) | (r << 16) | (g << 8) | b; //pixel
   }
+	
+	protected float getColorCoord(VoxModel voxModel, int x, int y, int z) {
+		byte color = voxModel.getMatrice()[x][y][z];
+		return (1.0f + ((1.0f/256.0f) * color) - (1.0f/512.0f)) % 1;
+	}
+	
+	protected void addTextCoord(List<Float> textCoords, float colorCoord) {
+		for(int i = 0 ; i < 4 ; i++) {
+			textCoords.add(colorCoord);
+			textCoords.add(0.5f);
+		}
+	}
+	
+	protected void addIndices(List<Integer> indices) {
+		indices.add(0 + (indices.size() / 6) * 4);
+		indices.add(1 + (indices.size() / 6) * 4);
+		indices.add(2 + (indices.size() / 6) * 4);
+		indices.add(0 + (indices.size() / 6) * 4);
+		indices.add(2 + (indices.size() / 6) * 4);
+		indices.add(3 + (indices.size() / 6) * 4);
+	}
+	
+	protected void addNormals(List<Float> normals, Vector3f normal) {
+		for(int i = 0 ; i < 4 ; i++) {
+			normals.add(normal.x);
+			normals.add(normal.y);
+			normals.add(normal.z);
+		}
+	}
+	
+	protected void addSurroundings(List<Float> surroundings, VoxModel voxModel, int x, int y, int z, Vector3f normal) {
+		boolean inBoundary = isInBoundary(voxModel, x, y, z, normal);
+		for(int i = 0 ; i < 4 ; i++) {
+			if(normal.x != 0) {
+				surroundings.add(inBoundary && y > 0 && voxModel.getMatrice()[x + (int) normal.x][y - 1][z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && z > 0 && voxModel.getMatrice()[x + (int) normal.x][y][z - 1] != null ? 1f : 0f);
+				surroundings.add(inBoundary && y < voxModel.getHeight() - 1 && voxModel.getMatrice()[x + (int) normal.x][y + 1][z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x + (int) normal.x][y][z + 1] != null ? 1f : 0f);
+			} else if(normal.y != 0) {
+				surroundings.add(inBoundary && x > 0 && voxModel.getMatrice()[x - 1][y + (int) normal.y][z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && z > 0 && voxModel.getMatrice()[x][y + (int) normal.y][z - 1] != null ? 1f : 0f);
+				surroundings.add(inBoundary && x < voxModel.getWidth() - 1 && voxModel.getMatrice()[x + 1][y + (int) normal.y][z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x][y + (int) normal.y][z + 1] != null ? 1f : 0f);
+			} else if(normal.z != 0) {
+				surroundings.add(inBoundary && x > 0 && voxModel.getMatrice()[x - 1][y][z + (int) normal.z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && y > 0 && voxModel.getMatrice()[x][y - 1][z + (int) normal.z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && x < voxModel.getWidth() - 1 && voxModel.getMatrice()[x + 1][y][z + (int) normal.z] != null ? 1f : 0f);
+				surroundings.add(inBoundary && y < voxModel.getHeight() - 1 && voxModel.getMatrice()[x][y + 1][z + (int) normal.z] != null ? 1f : 0f);
+			}
+		}
+	}
+	
+	protected void addSurroundingsDiag(List<Float> surroundingsDiag, VoxModel voxModel, int x, int y, int z, Vector3f normal) {
+		boolean inBoundary = isInBoundary(voxModel, x, y, z, normal);
+		for(int i = 0 ; i < 4 ; i++) {
+			if(normal.x != 0) {
+				surroundingsDiag.add(inBoundary && y > 0 && z > 0 && voxModel.getMatrice()[x + (int) normal.x][y - 1][z - 1] != null ? 1f : 0f);
+				surroundingsDiag.add(inBoundary && y > 0 && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x + (int) normal.x][y - 1][z + 1] != null ? 1f : 0f);
+				surroundingsDiag.add(inBoundary && y < voxModel.getHeight() - 1 && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x + (int) normal.x][y + 1][z + 1] != null ? 1f : 0f);
+				surroundingsDiag.add(inBoundary && y < voxModel.getHeight() - 1 && z > 0 && voxModel.getMatrice()[x + (int) normal.x][y + 1][z - 1] != null ? 1f : 0f);
+			} else if(normal.y != 0) {
+				surroundingsDiag.add(inBoundary && x > 0 && z > 0 && voxModel.getMatrice()[x - 1][y + (int) normal.y][z - 1] != null ? 1f : 0f);
+				surroundingsDiag.add(inBoundary && x > 0 && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x - 1][y + (int) normal.y][z + 1] != null ? 1f : 0f);
+				surroundingsDiag.add(inBoundary && x < voxModel.getWidth() - 1 && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x + 1][y + (int) normal.y][z + 1] != null ? 1f : 0f);
+				surroundingsDiag.add(inBoundary && x < voxModel.getWidth() - 1 && z > 0 && voxModel.getMatrice()[x + 1][y + (int) normal.y][z - 1] != null ? 1f : 0f);
+			} else if(normal.z != 0) {
+				surroundingsDiag.add(inBoundary && x > 0 && y > 0 && voxModel.getMatrice()[x - 1][y - 1][z + (int) normal.z] != null ? 1f : 0f);
+				surroundingsDiag.add(inBoundary && x > 0 && y < voxModel.getHeight() - 1 && voxModel.getMatrice()[x - 1][y + 1][z + (int) normal.z] != null ? 1f : 0f);
+				surroundingsDiag.add(inBoundary && x < voxModel.getWidth() - 1 && y < voxModel.getHeight() - 1 && voxModel.getMatrice()[x + 1][y + 1][z + (int) normal.z] != null ? 1f : 0f);
+				surroundingsDiag.add(inBoundary && x < voxModel.getWidth() - 1 && y > 0 && voxModel.getMatrice()[x + 1][y - 1][z + (int) normal.z] != null ? 1f : 0f);
+			}
+		}
+	}
+	
+	private boolean isInBoundary(VoxModel voxModel, int x, int y, int z, Vector3f normal) {
+		return x + normal.x < voxModel.getWidth() 
+				&& x + normal.x >= 0 
+				&& y + normal.y < voxModel.getHeight()
+				&& y + normal.y >= 0 
+				&& z + normal.z < voxModel.getDepth()
+				&& z + normal.z >= 0;
+	}
+	
+	protected void addPositions(List<Float> positions, int x, int y, int z, float[][] positionsFace){
+		for(int i = 0 ; i < 4 ; i++) {
+			positions.add(positionsFace[i][0] + x);
+			positions.add(positionsFace[i][1] + y);
+			positions.add(positionsFace[i][2] + z);
+		}
+	}
+	
+	protected Mesh createMesh(List<Float> positions, List<Float> surroundings, List<Float> surroundingsDiag, List<Float> textCoords, List<Float> normals, List<Integer> indices, AABBf boundaryBox){
+		float[] positionsArray = ArrayUtils.toPrimitive(positions.toArray(new Float[positions.size()]));
+		float[] surroundingsArray = ArrayUtils.toPrimitive(surroundings.toArray(new Float[surroundings.size()]));
+		float[] surroundingsDiagArray = ArrayUtils.toPrimitive(surroundingsDiag.toArray(new Float[surroundingsDiag.size()]));
+		float[] textCoordsArray = ArrayUtils.toPrimitive(textCoords.toArray(new Float[textCoords.size()]));
+		float[] normalsArray = ArrayUtils.toPrimitive(normals.toArray(new Float[normals.size()]));
+		int[] indicesArray = ArrayUtils.toPrimitive(indices.toArray(new Integer[indices.size()]));
+		return new Mesh(positionsArray, surroundingsArray, surroundingsDiagArray, textCoordsArray, normalsArray, indicesArray, boundaryBox);
+	}
+	
+	protected Texture createTexture(Vox vox) {
+		BufferedImage img = new BufferedImage(256, 1, BufferedImage.TYPE_INT_ARGB);
+
+		for (int c = 0; c < vox.getPalette().length - 1 ; c++) {
+			img.setRGB(c, 0, vox.getPalette()[c]);
+		}
+      return new Texture(convertImageData(img));
+	}
 }
