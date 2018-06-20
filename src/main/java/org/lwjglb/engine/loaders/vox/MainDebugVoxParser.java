@@ -6,7 +6,7 @@ public class MainDebugVoxParser {
 
   public static void main(String[] args) throws Exception {
     try {
-      File f = new File("src/toto.vox");
+      File f = new File("src/main/resources/models/untitled/toto.vox");
       VoxelFileReader vfr = new VoxelFileReader();
       Vox vox = vfr.readVox(f);
       System.out.println(vox.getPalette());
