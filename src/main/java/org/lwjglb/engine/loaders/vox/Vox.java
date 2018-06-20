@@ -6,6 +6,9 @@ import java.util.List;
 public class Vox {
 
   private final List<VoxModel> voxModels = new ArrayList<>();
+  private final List<Layer> layers = new ArrayList<>();
+  private final List<Matl> matls = new ArrayList<>();
+  private final List<RObj> rOBJs = new ArrayList<>();
 
   private TransformNode transformNode;
 
@@ -29,5 +32,17 @@ public class Vox {
 
   public List<VoxModel> getVoxModels() {
     return voxModels;
+  }
+
+  public List<Layer> getLayers() {
+    return layers;
+  }
+
+  public List<Matl> getMatls() {
+    return matls;
+  }
+
+  public List<RObj> getrOBJs() {
+    return rOBJs;
   }
 }

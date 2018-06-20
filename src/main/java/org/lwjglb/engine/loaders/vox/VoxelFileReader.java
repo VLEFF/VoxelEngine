@@ -72,6 +72,9 @@ class VoxelFileReader {
         case "nTRN" : readTransformNode(input, vox); break;
         case "nGRP" : readGroupNode(input, vox); break;
         case "nSHP" : readShapeNode(input, vox); break;
+        case "LAYR" : readLayer(input, vox); break;
+        case "MATL" : readMatl(input, vox); break;
+        case "rOBJ" : readrOBJ(input, vox); break;
         default : skip(input, chunk); break;
       }
     }
@@ -240,6 +243,27 @@ class VoxelFileReader {
     VoxModel voxModel = vox.getVoxModels().get(shapeNode.getShapeNodeModels().get(0).getModelId().intValue());
     voxModel.setTranslation(translation);
     voxModel.setRotation(rotation);
+  }
+
+  private void readLayer(BufferedInputStream input, Vox vox) throws IOException {
+    Layer layer = new Layer();
+    layer.setNodeId(read32(input));
+    layer.setNodeAttrib(readAttribMap(input));
+    layer.setUnknown(read32(input));
+    vox.getLayers().add(layer);
+  }
+
+  private void readMatl(BufferedInputStream input, Vox vox) throws IOException {
+    Matl matl = new Matl();
+    matl.setMaterialId(read32(input));
+    matl.setNodeAttrib(readAttribMap(input));
+    vox.getMatls().add(matl);
+  }
+
+  private void readrOBJ(BufferedInputStream input, Vox vox) throws IOException {
+    RObj rObj = new RObj();
+    rObj.setNodeAttrib(readAttribMap(input));
+    vox.getrOBJs().add(rObj);
   }
 
   private void skip(BufferedInputStream input, Chunk chunk) throws Exception {
