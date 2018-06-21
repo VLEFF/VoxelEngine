@@ -196,68 +196,30 @@ public class VoxelFileReader {
       shapeNodeModel.setModelAttrib(readAttribMap(input));
       shapeNode.getShapeNodeModels().add(shapeNodeModel);
     }
-    insertShapeNodeInTransformNode(shapeNode, vox.getTransformNode(), vox, new Vector3i(), new Matrix3f());
+    insertShapeNodeInTransformNode(shapeNode, vox.getTransformNode(), vox);
   }
 
-  private boolean insertShapeNodeInTransformNode(ShapeNode shapeNode, TransformNode transformNode, Vox vox, Vector3i translation, Matrix3f rotation){
-    translation = new Vector3i(translation).add(getTranslationVector(transformNode));
-    rotation = new Matrix3f(rotation).add(getRotationMatrix(transformNode));
+  private boolean insertShapeNodeInTransformNode(ShapeNode shapeNode, TransformNode transformNode, Vox vox){
     if(transformNode.getShapeNode() != null){
       return false;
     }
     if(transformNode.getGroupNode() == null){
-      applyTransformation(vox, shapeNode, translation, rotation);
       transformNode.setShapeNode(shapeNode);
       return true;
     }
     for(int i = 0 ; i < transformNode.getGroupNode().getTransformNodes().size() ; i++){
-      if(insertShapeNodeInTransformNode(shapeNode, transformNode.getGroupNode().getTransformNodes().get(i), vox, translation, rotation)){
+      if(insertShapeNodeInTransformNode(shapeNode, transformNode.getGroupNode().getTransformNodes().get(i), vox)){
         return true;
       }
     }
     return false;
   }
 
-  private Vector3i getTranslationVector(TransformNode transformNode) {
-    String[] translationTab = transformNode.getTransformations().get(0).getOrDefault("_t", "0 0 0").split(" ");
-    try {
-      return new Vector3i(Integer.parseInt(translationTab[0]), Integer.parseInt(translationTab[1]), Integer.parseInt(translationTab[2]));
-    } catch (NumberFormatException e) {
-      return new Vector3i();
-    }
-  }
-
-  private Matrix3f getRotationMatrix(TransformNode transformNode) {
-    String rotation = transformNode.getTransformations().get(0).get("_r");
-    Matrix3f matrix = new Matrix3f();
-    if(rotation != null) {
-      byte b = rotation.getBytes(StandardCharsets.UTF_8)[0];
-      int firstLineIndex = b & 0b00000011;
-      int secondLineIndex = (b >> 2) & 0b00000011;
-      int firstLineSign = (b >> 4) & 0b00000001;
-      int secondLineSign = (b >> 5) & 0b00000001;
-      int thirdLineSign = (b >> 6) & 0b00000001;
-
-      matrix.setRow(0, firstLineIndex == 0 ? 1 : 0, firstLineIndex == 1 ? 1 : 0, firstLineIndex == 2 ? 1 : 0);
-      matrix.setRow(0, secondLineIndex == 0 ? 1 : 0, secondLineIndex == 1 ? 1 : 0, secondLineIndex == 2 ? 1 : 0);
-      matrix.setRow(0, 3 - firstLineIndex - secondLineIndex == 0 ? 1 : 0, 3 - firstLineIndex - secondLineIndex == 1 ? 1 : 0, 3 - firstLineIndex - secondLineIndex == 2 ? 1 : 0);
-      matrix.set(firstLineIndex, 0, matrix.get(firstLineIndex, 0) * (firstLineSign == 1 ? -1 : 1));
-      matrix.set(secondLineIndex, 1, matrix.get(secondLineIndex, 1) * (secondLineSign == 1 ? -1 : 1));
-      matrix.set(3 - firstLineIndex - secondLineIndex, 2, matrix.get(3 - firstLineIndex - secondLineIndex, 2) * (thirdLineSign == 1 ? -1 : 1));
-    }
-    return matrix;
-  }
-
-  private void applyTransformation(Vox vox, ShapeNode shapeNode, Vector3i translation, Matrix3f rotation) {
-    VoxModel voxModel = vox.getVoxModels().get(shapeNode.getShapeNodeModels().get(0).getModelId().intValue());
-    voxModel.setTranslation(translation);
-    voxModel.setRotation(rotation);
-  }
-
   private void readLayer(BufferedInputStream input, Vox vox) throws IOException {
     Layer layer = new Layer();
     layer.setNodeId(read32(input));
     layer.setNodeAttrib(readAttribMap(input));
+    layer.setUnknown(read32(input));
     layer.setUnknown(read32(input));
     vox.getLayers().add(layer);
   }
@@ -282,18 +244,6 @@ public class VoxelFileReader {
       throw new Exception("Invalid number of bytes skipped.");
     }
   }
-  
-	public static ByteBuffer convertImageData(BufferedImage bi) {
-	    try {
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
-	        ImageIO.write(bi, "png", os);
-			InputStream is = new ByteArrayInputStream(os.toByteArray());
-			return Utils.inputStreamToByteBuffer(is, 1024);
-	    } catch (IOException ex) {
-	        //TODO
-	    }
-	    return null;
-	}
 
   protected void readChunk(BufferedInputStream input, Chunk chunk) throws IOException {
     chunk.id = readString(input, 4);
@@ -339,10 +289,6 @@ public class VoxelFileReader {
     return list;
   }
 
-  protected long magicValue(char c0, char c1, char c2, char c3) {
-    return ((c3 << 24) & 0xff000000) | ((c2 << 16) & 0x00ff0000) | ((c1 << 8) & 0x0000ff00) | (c0 & 0x000000ff);
-  }
-
   protected int patchColor(int rgba) {
     int b = (rgba & 0x00ff0000) >> 16;
     int g = (rgba & 0x0000ff00) >> 8;
@@ -353,118 +299,5 @@ public class VoxelFileReader {
 	protected float getColorCoord(VoxModel voxModel, Vector3i voxPosition) {
 		byte color = voxModel.getMatrice()[voxPosition.x][voxPosition.y][voxPosition.z];
 		return (1.0f + ((1.0f/256.0f) * color) - (1.0f/512.0f)) % 1;
-	}
-	
-	protected void addTextCoord(List<Float> textCoords, float colorCoord) {
-		for(int i = 0 ; i < 4 ; i++) {
-			textCoords.add(colorCoord);
-			textCoords.add(0.5f);
-		}
-	}
-	
-	protected void addIndices(List<Integer> indices) {
-		indices.add(0 + (indices.size() / 6) * 4);
-		indices.add(1 + (indices.size() / 6) * 4);
-		indices.add(2 + (indices.size() / 6) * 4);
-		indices.add(0 + (indices.size() / 6) * 4);
-		indices.add(2 + (indices.size() / 6) * 4);
-		indices.add(3 + (indices.size() / 6) * 4);
-	}
-	
-	protected void addNormals(List<Float> normals, Vector3f normal) {
-		for(int i = 0 ; i < 4 ; i++) {
-			normals.add(normal.x);
-			normals.add(normal.y);
-			normals.add(normal.z);
-		}
-	}
-	
-	protected void addSurroundings(List<Float> surroundings, VoxModel voxModel, Vector3i voxPosition, Vector3f normal) {
-		boolean inBoundary = isInBoundary(voxModel, voxPosition, normal);
-        int x = voxPosition.x;
-        int y = voxPosition.y;
-        int z = voxPosition.z;
-		for(int i = 0 ; i < 4 ; i++) {
-			if(normal.x != 0) {
-				surroundings.add(inBoundary && y > 0 && voxModel.getMatrice()[x + (int) normal.x][y - 1][z] != null ? 1f : 0f);
-				surroundings.add(inBoundary && z > 0 && voxModel.getMatrice()[x + (int) normal.x][y][z - 1] != null ? 1f : 0f);
-				surroundings.add(inBoundary && y < voxModel.getHeight() - 1 && voxModel.getMatrice()[x + (int) normal.x][y + 1][z] != null ? 1f : 0f);
-				surroundings.add(inBoundary && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x + (int) normal.x][y][z + 1] != null ? 1f : 0f);
-			} else if(normal.y != 0) {
-				surroundings.add(inBoundary && x > 0 && voxModel.getMatrice()[x - 1][y + (int) normal.y][z] != null ? 1f : 0f);
-				surroundings.add(inBoundary && z > 0 && voxModel.getMatrice()[x][y + (int) normal.y][z - 1] != null ? 1f : 0f);
-				surroundings.add(inBoundary && x < voxModel.getWidth() - 1 && voxModel.getMatrice()[x + 1][y + (int) normal.y][z] != null ? 1f : 0f);
-				surroundings.add(inBoundary && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x][y + (int) normal.y][z + 1] != null ? 1f : 0f);
-			} else if(normal.z != 0) {
-				surroundings.add(inBoundary && x > 0 && voxModel.getMatrice()[x - 1][y][z + (int) normal.z] != null ? 1f : 0f);
-				surroundings.add(inBoundary && y > 0 && voxModel.getMatrice()[x][y - 1][z + (int) normal.z] != null ? 1f : 0f);
-				surroundings.add(inBoundary && x < voxModel.getWidth() - 1 && voxModel.getMatrice()[x + 1][y][z + (int) normal.z] != null ? 1f : 0f);
-				surroundings.add(inBoundary && y < voxModel.getHeight() - 1 && voxModel.getMatrice()[x][y + 1][z + (int) normal.z] != null ? 1f : 0f);
-			}
-		}
-	}
-	
-	protected void addSurroundingsDiag(List<Float> surroundingsDiag, VoxModel voxModel, Vector3i voxPosition, Vector3f normal) {
-		boolean inBoundary = isInBoundary(voxModel, voxPosition, normal);
-		int x = voxPosition.x;
-        int y = voxPosition.y;
-        int z = voxPosition.z;
-		for(int i = 0 ; i < 4 ; i++) {
-			if(normal.x != 0) {
-				surroundingsDiag.add(inBoundary && y > 0 && z > 0 && voxModel.getMatrice()[x + (int) normal.x][y - 1][z - 1] != null ? 1f : 0f);
-				surroundingsDiag.add(inBoundary && y > 0 && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x + (int) normal.x][y - 1][z + 1] != null ? 1f : 0f);
-				surroundingsDiag.add(inBoundary && y < voxModel.getHeight() - 1 && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x + (int) normal.x][y + 1][z + 1] != null ? 1f : 0f);
-				surroundingsDiag.add(inBoundary && y < voxModel.getHeight() - 1 && z > 0 && voxModel.getMatrice()[x + (int) normal.x][y + 1][z - 1] != null ? 1f : 0f);
-			} else if(normal.y != 0) {
-				surroundingsDiag.add(inBoundary && x > 0 && z > 0 && voxModel.getMatrice()[x - 1][y + (int) normal.y][z - 1] != null ? 1f : 0f);
-				surroundingsDiag.add(inBoundary && x > 0 && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x - 1][y + (int) normal.y][z + 1] != null ? 1f : 0f);
-				surroundingsDiag.add(inBoundary && x < voxModel.getWidth() - 1 && z < voxModel.getDepth() - 1 && voxModel.getMatrice()[x + 1][y + (int) normal.y][z + 1] != null ? 1f : 0f);
-				surroundingsDiag.add(inBoundary && x < voxModel.getWidth() - 1 && z > 0 && voxModel.getMatrice()[x + 1][y + (int) normal.y][z - 1] != null ? 1f : 0f);
-			} else if(normal.z != 0) {
-				surroundingsDiag.add(inBoundary && x > 0 && y > 0 && voxModel.getMatrice()[x - 1][y - 1][z + (int) normal.z] != null ? 1f : 0f);
-				surroundingsDiag.add(inBoundary && x > 0 && y < voxModel.getHeight() - 1 && voxModel.getMatrice()[x - 1][y + 1][z + (int) normal.z] != null ? 1f : 0f);
-				surroundingsDiag.add(inBoundary && x < voxModel.getWidth() - 1 && y < voxModel.getHeight() - 1 && voxModel.getMatrice()[x + 1][y + 1][z + (int) normal.z] != null ? 1f : 0f);
-				surroundingsDiag.add(inBoundary && x < voxModel.getWidth() - 1 && y > 0 && voxModel.getMatrice()[x + 1][y - 1][z + (int) normal.z] != null ? 1f : 0f);
-			}
-		}
-	}
-	
-	private boolean isInBoundary(VoxModel voxModel, Vector3i voxPosition, Vector3f normal) {
-        int x = voxPosition.x;
-        int y = voxPosition.y;
-        int z = voxPosition.z;
-		return x + normal.x < voxModel.getWidth() 
-				&& x + normal.x >= 0 
-				&& y + normal.y < voxModel.getHeight()
-				&& y + normal.y >= 0 
-				&& z + normal.z < voxModel.getDepth()
-				&& z + normal.z >= 0;
-	}
-	
-	protected void addPositions(List<Float> positions, Vector3i voxPosition, float[][] positionsFace, Vector3i translation){
-		for(int i = 0 ; i < 4 ; i++) {
-			positions.add(positionsFace[i][0] + voxPosition.x + translation.x);
-			positions.add(positionsFace[i][1] + voxPosition.y + translation.y);
-			positions.add(positionsFace[i][2] + voxPosition.z + translation.z);
-		}
-	}
-	
-	protected Mesh createMesh(List<Float> positions, List<Float> surroundings, List<Float> surroundingsDiag, List<Float> textCoords, List<Float> normals, List<Integer> indices, AABBf boundaryBox){
-		float[] positionsArray = ArrayUtils.toPrimitive(positions.toArray(new Float[positions.size()]));
-		float[] surroundingsArray = ArrayUtils.toPrimitive(surroundings.toArray(new Float[surroundings.size()]));
-		float[] surroundingsDiagArray = ArrayUtils.toPrimitive(surroundingsDiag.toArray(new Float[surroundingsDiag.size()]));
-		float[] textCoordsArray = ArrayUtils.toPrimitive(textCoords.toArray(new Float[textCoords.size()]));
-		float[] normalsArray = ArrayUtils.toPrimitive(normals.toArray(new Float[normals.size()]));
-		int[] indicesArray = ArrayUtils.toPrimitive(indices.toArray(new Integer[indices.size()]));
-		return new Mesh(positionsArray, surroundingsArray, surroundingsDiagArray, textCoordsArray, normalsArray, indicesArray, boundaryBox);
-	}
-	
-	protected Texture createTexture(Vox vox) {
-		BufferedImage img = new BufferedImage(256, 1, BufferedImage.TYPE_INT_ARGB);
-
-		for (int c = 0; c < vox.getPalette().length - 1 ; c++) {
-			img.setRGB(c, 0, vox.getPalette()[c]);
-		}
-      return new Texture(convertImageData(img));
 	}
 }

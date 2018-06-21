@@ -15,10 +15,6 @@ public class VoxModel {
 
   private int numVoxel;
 
-  private Vector3i translation;
-
-  private Matrix3f rotation;
-
   public int getWidth() {
     return width;
   }
@@ -57,21 +53,5 @@ public class VoxModel {
 
   public void setNumVoxel(int numVoxel) {
     this.numVoxel = numVoxel;
-  }
-
-  public Vector3i getTranslation() {
-    return translation;
-  }
-
-  public void setTranslation(Vector3i translation) {
-    this.translation = translation;
-  }
-
-  public Matrix3f getRotation() {
-    return rotation;
-  }
-
-  public void setRotation(Matrix3f rotation) {
-    this.rotation = rotation;
   }
 }
