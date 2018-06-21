@@ -1,11 +1,11 @@
-package org.lwjglb.engine.loaders.vox;
+package org.lwjglb.engine.loaders.vox.bean;
 
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
 import java.util.function.BiPredicate;
 
-enum VoxelFaceParam {
+public enum VoxelFaceParam {
   RIGHT_FACE(
       new float[][]{{1f, 0f, 1f}, {1f, 0f, 0f}, {1f, 1f, 0f}, {1f, 1f, 1f}},
       new Vector3f(1,0,0),

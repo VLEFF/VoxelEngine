@@ -1,5 +1,8 @@
 package org.lwjglb.engine.loaders.vox;
 
+import org.lwjglb.engine.loaders.vox.bean.Vox;
+import org.lwjglb.engine.loaders.vox.reader.VoxelFileReader;
+
 import java.io.File;
 
 public class MainDebugVoxParser {

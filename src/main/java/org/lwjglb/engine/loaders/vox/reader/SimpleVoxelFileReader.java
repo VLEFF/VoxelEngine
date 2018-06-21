@@ -1,4 +1,4 @@
-package org.lwjglb.engine.loaders.vox;
+package org.lwjglb.engine.loaders.vox.reader;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -8,8 +8,11 @@ import org.joml.AABBf;
 import org.joml.Vector3i;
 import org.lwjglb.engine.graph.Material;
 import org.lwjglb.engine.graph.Mesh;
+import org.lwjglb.engine.loaders.vox.bean.Vox;
+import org.lwjglb.engine.loaders.vox.bean.VoxModel;
+import org.lwjglb.engine.loaders.vox.bean.VoxelFaceParam;
 
-class SimpleVoxelFileReader extends VoxelFileReader{
+public class SimpleVoxelFileReader extends VoxelFileReader{
 
 	public Mesh[] read(File file) throws Exception {
 		Vox vox = readVox(file);
@@ -26,12 +29,12 @@ class SimpleVoxelFileReader extends VoxelFileReader{
 				for (int y = 0 ; y < voxModel.getHeight() ; y++) {
 					for (int z = 0 ; z < voxModel.getDepth() ; z++) {
 						if(voxModel.getMatrice()[x][y][z] != null) {
-							Vector3i voxPosition = new Vector3i(x,y,z).add(voxModel.getTranslation());
+							Vector3i voxPosition = new Vector3i(x,y,z);
 							float colorCoord = getColorCoord(voxModel, voxPosition);
 
 							for(VoxelFaceParam voxelFaceParam : VoxelFaceParam.values()) {
                                 if(voxelFaceParam.getFilter().test(voxPosition, voxModel)) {
-                                    addPositions(positions, voxPosition, voxelFaceParam.getPositions());
+                                    addPositions(positions, voxPosition, voxelFaceParam.getPositions(), voxModel.getTranslation());
                                     addSurroundings(surroundings, voxModel, voxPosition, voxelFaceParam.getNormal());
                                     addSurroundingsDiag(surroundingsDiag, voxModel, voxPosition, voxelFaceParam.getNormal());
                                     addNormals(normals, voxelFaceParam.getNormal());

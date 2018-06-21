@@ -3,6 +3,8 @@ package org.lwjglb.engine.loaders.vox;
 import java.io.File;
 import org.lwjglb.engine.graph.Mesh;
 import org.lwjglb.engine.items.Board;
+import org.lwjglb.engine.loaders.vox.reader.BoardVoxelFileReader;
+import org.lwjglb.engine.loaders.vox.reader.SimpleVoxelFileReader;
 
 public class VOXLoader {
 

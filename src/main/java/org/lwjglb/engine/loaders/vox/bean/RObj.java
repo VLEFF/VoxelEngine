@@ -1,19 +1,10 @@
-package org.lwjglb.engine.loaders.vox;
+package org.lwjglb.engine.loaders.vox.bean;
 
 import java.util.Map;
 
-public class Matl {
+public class RObj {
 
-  private Long materialId;
   private Map<String,String> nodeAttrib;
-
-  public Long getMaterialId() {
-    return materialId;
-  }
-
-  public void setMaterialId(Long materialId) {
-    this.materialId = materialId;
-  }
 
   public Map<String, String> getNodeAttrib() {
     return nodeAttrib;

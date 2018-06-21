@@ -1,4 +1,4 @@
-package org.lwjglb.engine.loaders.vox;
+package org.lwjglb.engine.loaders.vox.reader;
 
 
 import java.awt.image.BufferedImage;
@@ -26,8 +26,17 @@ import org.joml.Vector3i;
 import org.lwjglb.engine.Utils;
 import org.lwjglb.engine.graph.Mesh;
 import org.lwjglb.engine.graph.Texture;
+import org.lwjglb.engine.loaders.vox.bean.GroupNode;
+import org.lwjglb.engine.loaders.vox.bean.Layer;
+import org.lwjglb.engine.loaders.vox.bean.Matl;
+import org.lwjglb.engine.loaders.vox.bean.RObj;
+import org.lwjglb.engine.loaders.vox.bean.ShapeNode;
+import org.lwjglb.engine.loaders.vox.bean.ShapeNodeModel;
+import org.lwjglb.engine.loaders.vox.bean.TransformNode;
+import org.lwjglb.engine.loaders.vox.bean.Vox;
+import org.lwjglb.engine.loaders.vox.bean.VoxModel;
 
-class VoxelFileReader {
+public class VoxelFileReader {
 
   protected static class Chunk {
     String id;
@@ -37,7 +46,7 @@ class VoxelFileReader {
 
   protected byte[] buf = new byte[4];
 
-  protected Vox readVox(File file) throws Exception {
+  public Vox readVox(File file) throws Exception {
     BufferedInputStream input = new BufferedInputStream(new FileInputStream(file));
     Chunk chunk = new Chunk();
 
@@ -432,11 +441,11 @@ class VoxelFileReader {
 				&& z + normal.z >= 0;
 	}
 	
-	protected void addPositions(List<Float> positions, Vector3i voxPosition, float[][] positionsFace){
+	protected void addPositions(List<Float> positions, Vector3i voxPosition, float[][] positionsFace, Vector3i translation){
 		for(int i = 0 ; i < 4 ; i++) {
-			positions.add(positionsFace[i][0] + voxPosition.x);
-			positions.add(positionsFace[i][1] + voxPosition.y);
-			positions.add(positionsFace[i][2] + voxPosition.z);
+			positions.add(positionsFace[i][0] + voxPosition.x + translation.x);
+			positions.add(positionsFace[i][1] + voxPosition.y + translation.y);
+			positions.add(positionsFace[i][2] + voxPosition.z + translation.z);
 		}
 	}
 	

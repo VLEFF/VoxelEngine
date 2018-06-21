@@ -1,4 +1,4 @@
-package org.lwjglb.engine.loaders.vox;
+package org.lwjglb.engine.loaders.vox.bean;
 
 import java.util.List;
 import java.util.Map;

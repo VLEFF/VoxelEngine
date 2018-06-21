@@ -1,4 +1,4 @@
-package org.lwjglb.engine.loaders.vox;
+package org.lwjglb.engine.loaders.vox.bean;
 
 import java.util.ArrayList;
 import java.util.List;

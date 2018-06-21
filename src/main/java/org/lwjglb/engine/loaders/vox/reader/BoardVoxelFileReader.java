@@ -1,4 +1,4 @@
-package org.lwjglb.engine.loaders.vox;
+package org.lwjglb.engine.loaders.vox.reader;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,8 +10,11 @@ import org.lwjglb.engine.graph.Material;
 import org.lwjglb.engine.graph.Mesh;
 import org.lwjglb.engine.items.Board;
 import org.lwjglb.engine.items.Tile;
+import org.lwjglb.engine.loaders.vox.bean.Vox;
+import org.lwjglb.engine.loaders.vox.bean.VoxModel;
+import org.lwjglb.engine.loaders.vox.bean.VoxelFaceParam;
 
-class BoardVoxelFileReader extends VoxelFileReader{
+public class BoardVoxelFileReader extends VoxelFileReader{
 
 	public Board read(File file, int tileSize) throws Exception {
 
@@ -44,7 +47,7 @@ class BoardVoxelFileReader extends VoxelFileReader{
 
                             for(VoxelFaceParam voxelFaceParam : VoxelFaceParam.values()) {
                                 if (voxelFaceParam.getFilter().test(voxPosition, voxModel)) {
-                                    addPositions(positions, voxPositionModuloTileSize, voxelFaceParam.getPositions());
+                                    addPositions(positions, voxPositionModuloTileSize, voxelFaceParam.getPositions(), voxModel.getTranslation());
                                     addSurroundings(surroundings, voxModel, voxPosition, voxelFaceParam.getNormal());
                                     addSurroundingsDiag(surroundingsDiag, voxModel, voxPosition, voxelFaceParam.getNormal());
                                     addNormals(normals, voxelFaceParam.getNormal());

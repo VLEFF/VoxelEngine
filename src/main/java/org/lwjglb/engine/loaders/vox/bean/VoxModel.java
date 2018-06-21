@@ -1,4 +1,4 @@
-package org.lwjglb.engine.loaders.vox;
+package org.lwjglb.engine.loaders.vox.bean;
 
 import org.joml.Matrix3f;
 import org.joml.Vector3i;
