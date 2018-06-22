@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.joml.AABBf;
+import org.joml.Quaternionf;
 import org.joml.Vector3i;
 import org.lwjglb.engine.graph.Material;
 import org.lwjglb.engine.graph.Mesh;
@@ -77,6 +78,7 @@ public class VoxToGameObjectsConverter extends VoxConverter{
 			List<GameItem> items = mapLayers.getOrDefault(layer, new ArrayList<>());
 			GameItem item = new GameItem(meshes.get(transformNode.getShapeNode().getShapeNodeModels().get(0).getModelId().intValue()));
 			item.setPosition(getTranslationVector(transformNode));
+			item.setRotation(new Quaternionf().setFromNormalized(getRotationMatrix(transformNode)));
 			items.add(item);
 			mapLayers.put(layer, items);
 		} else if(transformNode.getGroupNode() != null){
