@@ -36,8 +36,7 @@ public class VoxToGameObjectsConverter extends VoxConverter{
 	private List<Mesh> getMeshes(Vox vox) {
 		List<Mesh> meshes = new ArrayList<>();
 		VoxelFileReaderParam param = new VoxelFileReaderParam();
-		//param.setTexture(new Material(createTexture(vox)));
-		param.setTexture(null);
+		param.setTexture(new Material(createTexture(vox)));
 		for(VoxModel voxModel : vox.getVoxModels()) {
 			for (int x = 0 ; x < voxModel.getWidth() ; x++) {
 				for (int y = 0 ; y < voxModel.getHeight() ; y++) {
@@ -49,9 +48,8 @@ public class VoxToGameObjectsConverter extends VoxConverter{
 				}
 			}
 			AABBf boundaryBox = new AABBf(0, 0, 0, voxModel.getWidth(), voxModel.getHeight(), voxModel.getDepth());
-			//Mesh mesh = createMesh(param, boundaryBox);
-			//mesh.setMaterial(param.getTexture());
-			Mesh mesh = null;
+			Mesh mesh = createMesh(param, boundaryBox);
+			mesh.setMaterial(param.getTexture());
 			meshes.add(mesh);
 		}
 		return meshes;
