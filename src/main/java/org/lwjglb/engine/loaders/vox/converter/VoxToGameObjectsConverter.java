@@ -7,7 +7,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.joml.AABBf;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.lwjglb.engine.graph.Material;
 import org.lwjglb.engine.graph.Mesh;
@@ -29,7 +32,7 @@ public class VoxToGameObjectsConverter extends VoxConverter{
 		List<Mesh> meshes = getMeshes(vox);
 
 		Map<Layer,List<GameItem>> mapLayers = vox.getLayers().stream().collect(Collectors.toMap(l -> l,l -> new ArrayList<>()));
-		createGameItems(vox.getTransformNode(), meshes, mapLayers);
+		createGameItems(vox.getTransformNode(), meshes, mapLayers, new Vector3f(), new Matrix3f());
 
 		return mapLayers;
 	}
@@ -72,18 +75,20 @@ public class VoxToGameObjectsConverter extends VoxConverter{
 		}
 	}
 
-	private void createGameItems(TransformNode transformNode, List<Mesh> meshes, Map<Layer,List<GameItem>> mapLayers){
+	private void createGameItems(TransformNode transformNode, List<Mesh> meshes, Map<Layer,List<GameItem>> mapLayers, Vector3f translation, Matrix3f rotation){
+		Vector3f t = getTranslationVector(transformNode).add(translation);
+		Matrix3f r = getRotationMatrix(transformNode).add(rotation);
 		if(transformNode.getShapeNode() != null){
 			Layer layer = mapLayers.keySet().stream().filter(l -> l.getNodeId() == transformNode.getLayerId()).findFirst().get();
 			List<GameItem> items = mapLayers.getOrDefault(layer, new ArrayList<>());
 			GameItem item = new GameItem(meshes.get(transformNode.getShapeNode().getShapeNodeModels().get(0).getModelId().intValue()));
-			item.setPosition(getTranslationVector(transformNode));
-			item.setRotation(new Quaternionf().setFromNormalized(getRotationMatrix(transformNode)));
+			item.setPosition(t);
+			item.setRotation(new Quaternionf().setFromNormalized(r));
 			items.add(item);
 			mapLayers.put(layer, items);
 		} else if(transformNode.getGroupNode() != null){
-			for(TransformNode t : transformNode.getGroupNode().getTransformNodes()) {
-				createGameItems(t, meshes, mapLayers);
+			for(TransformNode node : transformNode.getGroupNode().getTransformNodes()) {
+				createGameItems(node, meshes, mapLayers, t, r);
 			}
 		}
 	}
