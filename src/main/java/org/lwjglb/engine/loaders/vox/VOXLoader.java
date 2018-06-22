@@ -1,14 +1,18 @@
 package org.lwjglb.engine.loaders.vox;
 
 import java.io.File;
-import org.lwjglb.engine.graph.Mesh;
+import java.util.List;
+import java.util.Map;
+
 import org.lwjglb.engine.items.Board;
+import org.lwjglb.engine.items.GameItem;
+import org.lwjglb.engine.loaders.vox.bean.Layer;
 import org.lwjglb.engine.loaders.vox.converter.VoxToBoardConverter;
 import org.lwjglb.engine.loaders.vox.converter.VoxToGameObjectsConverter;
 
 public class VOXLoader {
 
-    public static Mesh[] loadMesh(String fileName) throws Exception {
+    public static Map<Layer, List<GameItem>> loadMesh(String fileName) throws Exception {
       VoxToGameObjectsConverter vfr = new VoxToGameObjectsConverter();
     	return vfr.read(new File(fileName));
     }

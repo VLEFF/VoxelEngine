@@ -140,7 +140,7 @@ public class VoxConverter {
 	protected Mesh createMesh(VoxelFileReaderParam param, AABBf boundaryBox){
 		float[] positionsArray = ArrayUtils.toPrimitive(param.getPositions().toArray(new Float[param.getPositions().size()]));
 		float[] surroundingsArray = ArrayUtils.toPrimitive(param.getSurroundings().toArray(new Float[param.getSurroundings().size()]));
-		float[] surroundingsDiagArray = ArrayUtils.toPrimitive(param.getPositions().toArray(new Float[param.getSurroundingsDiag().size()]));
+		float[] surroundingsDiagArray = ArrayUtils.toPrimitive(param.getSurroundingsDiag().toArray(new Float[param.getSurroundingsDiag().size()]));
 		float[] textCoordsArray = ArrayUtils.toPrimitive(param.getTextCoords().toArray(new Float[param.getTextCoords().size()]));
 		float[] normalsArray = ArrayUtils.toPrimitive(param.getNormals().toArray(new Float[param.getNormals().size()]));
 		int[] indicesArray = ArrayUtils.toPrimitive(param.getIndices().toArray(new Integer[param.getIndices().size()]));
@@ -169,16 +169,16 @@ public class VoxConverter {
 	}
 
 
-	private Vector3i getTranslationVector(TransformNode transformNode) {
+	protected Vector3f getTranslationVector(TransformNode transformNode) {
 		String[] translationTab = transformNode.getTransformations().get(0).getOrDefault("_t", "0 0 0").split(" ");
 		try {
-			return new Vector3i(Integer.parseInt(translationTab[0]), Integer.parseInt(translationTab[1]), Integer.parseInt(translationTab[2]));
+			return new Vector3f(Float.parseFloat(translationTab[0]), Float.parseFloat(translationTab[1]), Float.parseFloat(translationTab[2]));
 		} catch (NumberFormatException e) {
-			return new Vector3i();
+			return new Vector3f();
 		}
 	}
 
-	private Matrix3f getRotationMatrix(TransformNode transformNode) {
+	protected Matrix3f getRotationMatrix(TransformNode transformNode) {
 		String rotation = transformNode.getTransformations().get(0).get("_r");
 		Matrix3f matrix = new Matrix3f();
 		if (rotation != null) {

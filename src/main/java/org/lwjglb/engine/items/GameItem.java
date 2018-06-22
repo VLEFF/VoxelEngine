@@ -58,6 +58,10 @@ public class GameItem {
         this.position.z = z;
     }
 
+    public final void setPosition(Vector3f position) {
+        this.position.set(position);
+    }
+
     public float getScale() {
         return scale;
     }

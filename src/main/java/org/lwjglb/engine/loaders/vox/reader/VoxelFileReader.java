@@ -220,7 +220,6 @@ public class VoxelFileReader {
     layer.setNodeId(read32(input));
     layer.setNodeAttrib(readAttribMap(input));
     layer.setUnknown(read32(input));
-    layer.setUnknown(read32(input));
     vox.getLayers().add(layer);
   }
 

@@ -6,6 +6,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.lwjglb.engine.IGameLogic;
 import org.lwjglb.engine.MouseInput;
@@ -22,6 +23,7 @@ import org.lwjglb.engine.items.GameItem;
 import org.lwjglb.engine.items.Player;
 import org.lwjglb.engine.items.SkyBox;
 import org.lwjglb.engine.loaders.vox.VOXLoader;
+import org.lwjglb.engine.loaders.vox.bean.Layer;
 
 public class DummyGame implements IGameLogic {
 
@@ -67,10 +69,9 @@ public class DummyGame implements IGameLogic {
 
         List<GameItem> cubes = new ArrayList<>();
 
-        Mesh[] world = VOXLoader.loadMesh("src/main/resources/models/untitled/toto.vox");    
-        for(Mesh mesh : world) {
-        	GameItem item = new GameItem(mesh);
-            cubes.add(item);
+        Map<Layer, List<GameItem>> layers = VOXLoader.loadMesh("src/main/resources/models/untitled/toto.vox");
+        for(List<GameItem> items : layers.values()) {
+            cubes.addAll(items);
         }
         scene.setGameItems(cubes.toArray(new GameItem[cubes.size()]));
         
