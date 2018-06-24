@@ -32,7 +32,7 @@ public class VoxToGameObjectsConverter extends VoxConverter{
 		List<Mesh> meshes = getMeshes(vox);
 
 		Map<Layer,List<GameItem>> mapLayers = vox.getLayers().stream().collect(Collectors.toMap(l -> l,l -> new ArrayList<>()));
-		createGameItems(vox.getTransformNode(), meshes, mapLayers, new Vector3f(), new Matrix3f());
+		createGameItems(vox.getTransformNode(), meshes, mapLayers, new Vector3f(), new Vector3f());
 
 		return mapLayers;
 	}
@@ -51,23 +51,26 @@ public class VoxToGameObjectsConverter extends VoxConverter{
 					}
 				}
 			}
-			AABBf boundaryBox = new AABBf(0, 0, 0, voxModel.getWidth(), voxModel.getHeight(), voxModel.getDepth());
+			Vector3f vec = new Vector3f(voxModel.getWidth(), voxModel.getHeight(), voxModel.getDepth());
+			AABBf boundaryBox = new AABBf(new Vector3f().sub(vec), new Vector3f().add(vec));
 			Mesh mesh = createMesh(param, boundaryBox);
 			mesh.setMaterial(param.getTexture());
 			meshes.add(mesh);
+			param.resetLists();
 		}
 		return meshes;
 	}
 
 	private void addVoxel(VoxelFileReaderParam param, VoxModel voxModel, int x, int y, int z) {
-		Vector3i voxPosition = new Vector3i(x, y, z);
-		float colorCoord = getColorCoord(voxModel, voxPosition);
+		Vector3i voxPosition = new Vector3i(x - (voxModel.getWidth() / 2), y - (voxModel.getHeight() / 2), z - (voxModel.getDepth() / 2));
+		Vector3i voxPositionUnsigned = new Vector3i(x, y, z);
+		float colorCoord = getColorCoord(voxModel, voxPositionUnsigned);
 
 		for (VoxelFaceParam voxelFaceParam : VoxelFaceParam.values()) {
-			if (voxelFaceParam.getFilter().test(voxPosition, voxModel)) {
+			if (voxelFaceParam.getFilter().test(voxPositionUnsigned, voxModel)) {
 				addPositions(param.getPositions(), voxPosition, voxelFaceParam.getPositions());
-				addSurroundings(param.getSurroundings(), voxModel, voxPosition, voxelFaceParam.getNormal());
-				addSurroundingsDiag(param.getSurroundingsDiag(), voxModel, voxPosition, voxelFaceParam.getNormal());
+				addSurroundings(param.getSurroundings(), voxModel, voxPositionUnsigned, voxelFaceParam.getNormal());
+				addSurroundingsDiag(param.getSurroundingsDiag(), voxModel, voxPositionUnsigned, voxelFaceParam.getNormal());
 				addNormals(param.getNormals(), voxelFaceParam.getNormal());
 				addIndices(param.getIndices());
 				addTextCoord(param.getTextCoords(), colorCoord);
@@ -75,15 +78,16 @@ public class VoxToGameObjectsConverter extends VoxConverter{
 		}
 	}
 
-	private void createGameItems(TransformNode transformNode, List<Mesh> meshes, Map<Layer,List<GameItem>> mapLayers, Vector3f translation, Matrix3f rotation){
+	private void createGameItems(TransformNode transformNode, List<Mesh> meshes, Map<Layer,List<GameItem>> mapLayers, Vector3f translation, Vector3f rotation){
 		Vector3f t = getTranslationVector(transformNode).add(translation);
-		Matrix3f r = getRotationMatrix(transformNode).add(rotation);
+		Vector3f r = getRotation(transformNode).add(rotation);
 		if(transformNode.getShapeNode() != null){
 			Layer layer = mapLayers.keySet().stream().filter(l -> l.getNodeId() == transformNode.getLayerId()).findFirst().get();
 			List<GameItem> items = mapLayers.getOrDefault(layer, new ArrayList<>());
-			GameItem item = new GameItem(meshes.get(transformNode.getShapeNode().getShapeNodeModels().get(0).getModelId().intValue()));
+			Mesh mesh = meshes.get(transformNode.getShapeNode().getShapeNodeModels().get(0).getModelId().intValue());
+			GameItem item = new GameItem(mesh);
 			item.setPosition(t);
-			item.setRotation(new Quaternionf().setFromNormalized(r));
+			item.setRotation(new Quaternionf().rotateXYZ(r.y, r.z, r.x));
 			items.add(item);
 			mapLayers.put(layer, items);
 		} else if(transformNode.getGroupNode() != null){

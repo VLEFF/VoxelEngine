@@ -3,6 +3,7 @@ package org.lwjglb.engine.loaders.vox.converter;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.joml.AABBf;
+import org.joml.AxisAngle4f;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -32,6 +33,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -172,17 +174,17 @@ public class VoxConverter {
 	protected Vector3f getTranslationVector(TransformNode transformNode) {
 		String[] translationTab = transformNode.getTransformations().get(0).getOrDefault("_t", "0 0 0").split(" ");
 		try {
-			return new Vector3f(Float.parseFloat(translationTab[0]), Float.parseFloat(translationTab[1]), Float.parseFloat(translationTab[2]));
+			return new Vector3f(Float.parseFloat(translationTab[1]), Float.parseFloat(translationTab[2]), Float.parseFloat(translationTab[0]));
 		} catch (NumberFormatException e) {
 			return new Vector3f();
 		}
 	}
 
-	protected Matrix3f getRotationMatrix(TransformNode transformNode) {
+	protected Vector3f getRotation(TransformNode transformNode) {
 		String rotation = transformNode.getTransformations().get(0).get("_r");
 		Matrix3f matrix = new Matrix3f();
 		if (rotation != null) {
-			byte b = rotation.getBytes(StandardCharsets.UTF_8)[0];
+			byte b = (byte) Integer.parseInt(rotation);
 			int firstLineIndex = b & 0b00000011;
 			int secondLineIndex = (b >> 2) & 0b00000011;
 			int firstLineSign = (b >> 4) & 0b00000001;
@@ -190,9 +192,9 @@ public class VoxConverter {
 			int thirdLineSign = (b >> 6) & 0b00000001;
 
 			matrix.setRow(0, firstLineIndex == 0 ? 1 : 0, firstLineIndex == 1 ? 1 : 0, firstLineIndex == 2 ? 1 : 0);
-			matrix.setRow(0, secondLineIndex == 0 ? 1 : 0, secondLineIndex == 1 ? 1 : 0, secondLineIndex == 2 ? 1 : 0);
+			matrix.setRow(1, secondLineIndex == 0 ? 1 : 0, secondLineIndex == 1 ? 1 : 0, secondLineIndex == 2 ? 1 : 0);
 			matrix.setRow(
-					0,
+					2,
 					3 - firstLineIndex - secondLineIndex == 0 ? 1 : 0,
 					3 - firstLineIndex - secondLineIndex == 1 ? 1 : 0,
 					3 - firstLineIndex - secondLineIndex == 2 ? 1 : 0
@@ -201,6 +203,8 @@ public class VoxConverter {
 			matrix.set(secondLineIndex, 1, matrix.get(secondLineIndex, 1) * (secondLineSign == 1 ? -1 : 1));
 			matrix.set(3 - firstLineIndex - secondLineIndex, 2, matrix.get(3 - firstLineIndex - secondLineIndex, 2) * (thirdLineSign == 1 ? -1 : 1));
 		}
-		return matrix;
+		System.out.println(matrix.getEulerAnglesZYX(new Vector3f()));
+		System.out.println(matrix);
+		return matrix.getEulerAnglesZYX(new Vector3f());
 	}
 }

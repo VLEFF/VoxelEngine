@@ -69,7 +69,7 @@ public class DummyGame implements IGameLogic {
 
         List<GameItem> cubes = new ArrayList<>();
 
-        Map<Layer, List<GameItem>> layers = VOXLoader.loadMesh("src/main/resources/models/untitled/toto.vox");
+        Map<Layer, List<GameItem>> layers = VOXLoader.loadMesh("src/main/resources/models/untitled/toto2.vox");
         for(List<GameItem> items : layers.values()) {
             cubes.addAll(items);
         }
