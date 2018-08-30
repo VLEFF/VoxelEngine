@@ -34,34 +34,35 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 public class VoxConverter {
+
+	private static final List<Integer> INDICES = Arrays.asList(0,1,2,0,2,3);
 
 	protected float getColorCoord(VoxModel voxModel, Vector3i voxPosition) {
 		byte color = voxModel.getMatrice()[voxPosition.x][voxPosition.y][voxPosition.z];
 		return (1.0f + ((1.0f/256.0f) * color) - (1.0f/512.0f)) % 1;
 	}
 	
-	protected void addTextCoord(List<Float> textCoords, float colorCoord) {
+	protected void addTextCoord(Collection<Float> textCoords, float colorCoord) {
 		for(int i = 0 ; i < 4 ; i++) {
 			textCoords.add(colorCoord);
 			textCoords.add(0.5f);
 		}
 	}
 	
-	protected void addIndices(List<Integer> indices) {
-		indices.add(0 + (indices.size() / 6) * 4);
-		indices.add(1 + (indices.size() / 6) * 4);
-		indices.add(2 + (indices.size() / 6) * 4);
-		indices.add(0 + (indices.size() / 6) * 4);
-		indices.add(2 + (indices.size() / 6) * 4);
-		indices.add(3 + (indices.size() / 6) * 4);
+	protected void addIndices(Collection<Integer> indices) {
+		for(Integer i : INDICES) {
+			indices.add(i + (indices.size() / 6) * 4);
+		}
 	}
 	
-	protected void addNormals(List<Float> normals, Vector3f normal) {
+	protected void addNormals(Collection<Float> normals, Vector3f normal) {
 		for(int i = 0 ; i < 4 ; i++) {
 			normals.add(normal.x);
 			normals.add(normal.y);
@@ -69,7 +70,7 @@ public class VoxConverter {
 		}
 	}
 	
-	protected void addSurroundings(List<Float> surroundings, VoxModel voxModel, Vector3i voxPosition, Vector3f normal) {
+	protected void addSurroundings(Collection<Float> surroundings, VoxModel voxModel, Vector3i voxPosition, Vector3f normal) {
 		boolean inBoundary = isInBoundary(voxModel, voxPosition, normal);
         int x = voxPosition.x;
         int y = voxPosition.y;
@@ -94,7 +95,7 @@ public class VoxConverter {
 		}
 	}
 	
-	protected void addSurroundingsDiag(List<Float> surroundingsDiag, VoxModel voxModel, Vector3i voxPosition, Vector3f normal) {
+	protected void addSurroundingsDiag(Collection<Float> surroundingsDiag, VoxModel voxModel, Vector3i voxPosition, Vector3f normal) {
 		boolean inBoundary = isInBoundary(voxModel, voxPosition, normal);
 		int x = voxPosition.x;
         int y = voxPosition.y;
@@ -131,7 +132,7 @@ public class VoxConverter {
 				&& z + normal.z >= 0;
 	}
 	
-	protected void addPositions(List<Float> positions, Vector3i voxPosition, float[][] positionsFace){
+	protected void addPositions(Collection<Float> positions, Vector3i voxPosition, float[][] positionsFace){
 		for(int i = 0 ; i < 4 ; i++) {
 			positions.add(positionsFace[i][0] + voxPosition.x);
 			positions.add(positionsFace[i][1] + voxPosition.y);
@@ -203,8 +204,6 @@ public class VoxConverter {
 			matrix.set(secondLineIndex, 1, matrix.get(secondLineIndex, 1) * (secondLineSign == 1 ? -1 : 1));
 			matrix.set(3 - firstLineIndex - secondLineIndex, 2, matrix.get(3 - firstLineIndex - secondLineIndex, 2) * (thirdLineSign == 1 ? -1 : 1));
 		}
-		System.out.println(matrix.getEulerAnglesZYX(new Vector3f()));
-		System.out.println(matrix);
 		return matrix.getEulerAnglesZYX(new Vector3f());
 	}
 }
